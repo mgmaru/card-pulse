@@ -1,1 +1,44 @@
-_prompts
+# Local prompts and notes
+_prompts/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.python-version
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Runtime data and databases
+var/*
+!var/raw/
+!var/db/
+!var/logs/
+!var/review/
+var/raw/*
+var/db/*
+var/logs/*
+var/review/*
+!var/raw/.gitkeep
+!var/db/.gitkeep
+!var/logs/.gitkeep
+!var/review/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and temporary files
+*.log
+.DS_Store
