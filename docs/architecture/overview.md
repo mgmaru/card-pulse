@@ -6,48 +6,50 @@
 
 ## システム境界
 
-Card Pulseは外部情報源から価格を取得し、再解析可能な原本と追跡可能な価格観測を保存し、利用側へ相場情報を返す独立したシステムである。
+Card Pulseは外部情報源から価格を取得し、再解析可能な原本と追跡可能な価格観測を保存し、Card Digger等へHTTPS APIで相場情報を提供する独立したシステムである。
 
 ```mermaid
 flowchart LR
-    subgraph External[外部]
-        W[店舗Web]
-        M[手動CSV・JSON]
-        X[将来の画像・X等]
-        D[Card Digger]
+    subgraph Clients[利用側]
+        PC[Card Digger PC]
+        Mobile[Card Digger スマホ]
+        Other[将来のアプリ]
     end
 
-    subgraph Pulse[Card Pulse]
-        S[Source adapters]
-        A[Application use cases]
-        R[Review]
-        Q[Market query]
-        P[(Structured store)]
-        F[(Raw artifact store)]
+    subgraph Public[公開領域]
+        API[Card Pulse API]
     end
 
-    W --> S
-    M --> S
-    X -. 検証後 .-> S
-    S --> F
-    S --> A
-    A --> R
-    A --> P
-    P --> Q
-    Q --> D
+    subgraph Private[非公開領域]
+        Worker[Collection Worker]
+        DB[(Server Database)]
+        Artifacts[(Raw Artifact Storage)]
+    end
+
+    Sources[店舗Web・手動取込・将来の情報源] --> Worker
+    Worker --> Artifacts
+    Worker --> DB
+    PC -->|HTTPS| API
+    Mobile -->|HTTPS| API
+    Other -->|HTTPS| API
+    API --> DB
 ```
 
-取得元、DB、原本保存先、CLIは交換可能な外部詳細として扱い、価格観測とカード同定の規則から分離する。
+利用側はDBへ直接接続しない。APIだけを公開し、Collection Worker、DB、artifact storageは外部公開しない。API、Worker、DBは別のruntime serviceとして扱う。
 
-## 構成方針
+DB製品、hosting provider、台数、可用性構成は未決定である。構造化データをサーバー側DBへ置くことだけを現在の決定とし、製品は要件比較とPoC後にADRで選定する。
 
-MVPは単一Pythonパッケージのモジュラーモノリスとする。プロセスやdeploymentを早期に分けず、コード上の依存方向で責務を分ける。
+## コード構成
+
+MVPは単一Pythonパッケージのモジュラーモノリスとする。APIとWorkerは同じdomain・application codeを利用しながら、異なるentrypointとして独立して起動・デプロイする。
 
 ```mermaid
 flowchart TB
-    E[entrypoints] --> A[application]
-    S[source adapters] --> A
-    P[persistence / artifact adapters] --> A
+    APIE[API entrypoint] --> A[application]
+    WE[Worker entrypoint] --> A
+    CE[CLI entrypoint] --> A
+    SA[source adapters] --> A
+    PA[persistence / artifact adapters] --> A
     A --> D[domain]
 ```
 
@@ -56,47 +58,98 @@ flowchart TB
 | `domain` | 価格、同定、出典、集計に関する型と規則 | 標準ライブラリと最小限の純粋な型 |
 | `application` | 取込、再解析、レビュー、照会のユースケースとport | domain |
 | `adapters/sources` | HTTP、HTML、JSON、CSVなど情報源固有の取得・解析 | applicationが定義するportと候補型 |
-| `adapters/persistence` | SQLiteなどへの保存と検索 | applicationが定義するrepository port |
-| `adapters/artifacts` | 原本ファイルの保存・読出し | applicationが定義するartifact port |
-| `entrypoints` | CLI、scheduler、将来のAPI | application |
+| `adapters/persistence` | 選定したDBへの保存と検索 | applicationが定義するrepository port |
+| `adapters/artifacts` | 原本の保存・読出し | applicationが定義するartifact port |
+| `entrypoints/api` | HTTPS API、認証、request/response変換 | application |
+| `entrypoints/worker` | 収集・解析jobとschedulerからの起動境界 | application |
+| `entrypoints/cli` | 開発・運用コマンド | application |
 
-domainとapplicationはsource adapter、SQLite、ファイルシステムをimportしない。実行時にentrypointが具体的なadapterを組み合わせる。
+domainとapplicationはsource adapter、特定のDB製品、object storage、Web frameworkをimportしない。entrypointが実行時に具体的なadapterを組み合わせる。
+
+## Serviceの責務
+
+### API
+
+- Card Digger等から認証済みHTTPS requestを受ける。
+- 最新相場、履歴、根拠観測、鮮度、欠損・曖昧状態を返す。
+- DB schemaや内部tableを外部contractへ直接露出しない。
+- 外部情報源への取得をrequest処理中に実行しない。
+
+### Collection Worker
+
+- schedulerまたは運用コマンドから取込jobを受ける。
+- source adapterを実行し、解析前の原本を保存する。
+- parser、検証、カード同定を実行する。
+- 確定観測をDBへ保存し、曖昧な候補をreviewへ送る。
+- sourceごとの障害を他のsourceとAPIへ波及させない。
+
+### Database
+
+- source、shop、ingest run、raw artifact metadata、card identity、price observation、review itemを保存する。
+- API、Worker、migration用に異なるroleを持たせる。
+- private networkからのみ接続可能にする。
+- 製品選定では整合性、transaction、query、backup・復元、運用、費用を評価する。
+
+### Raw Artifact Storage
+
+- HTML、JSON、CSV、PDF、画像等の原本本体を保存する。
+- DBにはartifact ID、content hash、取得日時、URL、保存参照等のメタデータを持たせる。
+- ローカル開発ではfilesystemまたは互換container、本番では選定したstorage serviceを使う。
 
 ## 取込フロー
 
-1. `ingest_run` を開始し、sourceと実行設定を確定する。
+1. Workerが`ingest_run`を開始し、sourceと実行設定を確定する。
 2. source adapterが低頻度・制限付きで原本を取得する。
-3. 解析前に原本本体とメタデータをartifact storeへ保存する。
-4. parserが保存済み原本から観測候補を生成する。
-5. applicationが必須項目、金額、日時、重複を検証する。
-6. カード同定を行い、確定可能な候補だけを価格観測として保存する。
-7. 曖昧、欠損、異常な候補を理由付きでreview itemへ送る。
-8. 件数とエラー分類を記録し、`ingest_run` を完了または失敗にする。
+3. 解析前に原本本体をartifact storageへ保存する。
+4. DBへ原本メタデータと処理状態を記録する。
+5. parserが保存済み原本から観測候補を生成する。
+6. applicationが必須項目、金額、日時、重複を検証する。
+7. カード同定を行い、確定可能な候補だけをDB transactionで価格観測として保存する。
+8. 曖昧、欠損、異常な候補を理由付きでreview itemへ送る。
+9. 件数とエラー分類を記録し、`ingest_run`を完了または失敗にする。
 
-途中で失敗した場合も、確定前の候補を部分的な観測値として扱わない。保存済み原本がある場合は、外部へ再アクセスせず再解析できるようにする。
+DBとartifact storageを一つのtransactionで更新できる前提にしない。片方だけが成功した状態を記録し、idempotency keyによる再実行と孤立データの検出で回復する。具体的なtransaction boundaryと状態遷移はPhase 2で決定する。
 
-## 保存境界
+## ローカル開発
 
-- SQLiteはsource、shop、ingest run、raw artifact metadata、card identity、price observation、review itemを保存する第一候補とする。
-- 原本本体はファイルシステムへ保存し、SQLiteから安定した相対パスまたはartifact IDで参照する。
-- applicationはSQLiteのテーブルやファイルパスを直接扱わず、repositoryとartifact storeのportを使う。
-- PostgreSQLやobject storageへの移行は、ローカルMVPで必要性が確認された後に判断する。
+Docker Composeで、API、Worker、選定DB、artifact storageのservice topologyを一台の開発PC上に再現する。
 
-## 障害の分離
+```mermaid
+flowchart LR
+    subgraph DockerCompose[Local Docker Compose]
+        LA[API container]
+        LW[Worker container]
+        LDB[(Database container)]
+        LS[(Artifact storage container / volume)]
+        LA --> LDB
+        LW --> LDB
+        LW --> LS
+    end
+```
+
+Dockerでapplication runtime、依存version、network、volume、環境変数の形をそろえる。本番のmanaged service、IAM、load balancer、実network latency、backup、自動拡張、障害復旧まで再現できるとは扱わない。詳しくは [Dockerによる環境再現](../learning/docker-environment-reproduction.md) を参照する。
+
+## 障害と変更の分離
 
 - sourceごとに取込実行、設定、再試行、エラーを分ける。
+- APIとWorkerを別serviceにし、収集処理の停止や高負荷からAPIを分離する。
 - 0件と取得失敗を別の結果として扱う。
 - parserの件数急減や必須項目欠損を検知し、壊れたデータを正常値として確定しない。
-- source停止中も保存済みデータの照会を可能にする。
+- source停止中も保存済みデータのAPI照会を可能にする。
 - X、OCR等の不安定または重い依存は、採用時も専用adapterへ閉じ込める。
+
+serviceを分けても、DB schemaとAPI・Workerの依存は残る。影響を抑えるため、後方互換なmigration、deployment順序、role別権限、rollback、backup・restoreを実装前のTODOとして扱う。
 
 ## 変更の管理
 
-複数領域へ影響する方針変更、永続化方式、同定規則、外部契約はADRに残す。列レベルのDB変更はmigration、外部データ形式はversion付きschema、Python内部の境界は型定義を正とする。
+複数領域へ影響する方針変更、DB製品、永続化方式、同定規則、外部contractはADRに残す。列レベルのDB変更はmigration、外部データ形式はversion付きschema、Python内部の境界は型定義を正とする。
 
 ## 関連文書
 
 - [ADR-0001: モジュラーモノリス](../adr/0001-modular-monolith.md)
 - [ADR-0002: 追記型と出典追跡](../adr/0002-append-only-provenance.md)
+- [ADR-0004: サーバー側DBと製品選定](../adr/0004-server-database-selection.md)
+- [ADR-0005: runtime serviceの分離](../adr/0005-separate-runtime-services.md)
+- [ADR-0006: Dockerによるローカル開発](../adr/0006-docker-compose-local-development.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)

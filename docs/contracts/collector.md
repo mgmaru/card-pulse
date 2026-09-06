@@ -32,7 +32,7 @@ Python上の正確なprotocolと型定義は実装時のコードを正とする
 
 Source adapterは次を担当しない。
 
-- SQLiteテーブルへの直接書込み
+- DB tableへの直接書込み
 - source横断のカード同定
 - source横断の重複排除
 - 相場集計

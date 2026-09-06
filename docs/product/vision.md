@@ -17,7 +17,7 @@ Card Pulseは、複数の情報源からTCGカードの価格情報を収集し�
 - 価格が過去からどのように変化したか。
 - その結論の根拠となった店舗、原本、観測日時は何か。
 
-Card Pulseはこれらに答えられるデータを作り、Card Diggerや将来の相場確認ツールから利用できるようにする。
+Card Pulseはこれらに答えられるデータを作り、PC・スマートフォン上のCard Diggerや将来の相場確認ツールから利用できるようにする。
 
 ## 解決したい問題
 
@@ -40,7 +40,7 @@ Card Pulseはこれらに答えられるデータを作り、Card Diggerや将�
 | 主な処理 | 検索、商品分析、候補抽出、評価 | 取得、原本保存、解析、同定、集計 |
 | 成果 | 掘り出し物候補 | 根拠と鮮度を伴う相場情報 |
 
-Card PulseはCard Digger専用の内部部品にはしない。Card DiggerはCard Pulseの保存方式に依存せず、定義された問い合わせ境界から価格情報を取得する。
+Card PulseはCard Digger専用の内部部品にはしない。Card DiggerはCard Pulseの保存方式に依存せず、HTTPS APIから価格情報を取得する。構造化データはサーバー側DBへ置き、API、Collection Worker、DBを別serviceとして扱う。DB製品は要件比較とPoC後に決定する。
 
 ## 価値の検証
 

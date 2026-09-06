@@ -14,11 +14,13 @@
 
 ## Architecture
 
-- Keep domain rules independent from HTTP, HTML parsers, SQLite, OCR, and command-line concerns.
+- Keep domain rules independent from HTTP, HTML parsers, a specific database product, OCR, and command-line concerns.
 - Put source-specific acquisition and parsing under `src/card_pulse/adapters/sources/<source-slug>/`.
 - Preserve raw artifacts before parsing. Parsing must be repeatable from stored artifacts or approved fixtures.
 - Keep stored observations append-only. Express corrections and reparsing as new history rather than overwriting evidence.
 - Route ambiguous card identities to review instead of confirming a name-only match.
+- Keep API, collection worker, and database as separate runtime services while sharing domain and application code in this repository.
+- Use Docker Compose to reproduce the local service topology. Do not treat it as a complete reproduction of managed production infrastructure.
 
 ## Data and tests
 

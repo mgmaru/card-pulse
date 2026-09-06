@@ -19,12 +19,12 @@ Card Pulseは現在、情報源とMVPの成立性を確認する段階です。�
 
 ## 実装上の原則
 
-- ドメイン層をHTTP、HTML、SQLite、OCRなどの詳細へ依存させません。
+- ドメイン層をHTTP、HTML、特定のDB製品、OCRなどの詳細へ依存させません。
 - 情報源固有の処理は `src/card_pulse/adapters/sources/<source>/` に閉じ込めます。
 - 原本を保存してから解析し、固定fixtureだけでparserを再実行できるようにします。
 - 価格観測値は追記型とし、再実行で重複しない識別規則を持たせます。
 - 自動同定の誤結合を避け、曖昧な結果はレビュー対象にします。
-- 認証情報、Cookie、個人情報、取得原本、ローカルDBをGitへ追加しません。
+- 認証情報、Cookie、個人情報、取得原本、開発用DB volumeをGitへ追加しません。
 
 ## テスト
 
@@ -45,4 +45,6 @@ Card Pulseは現在、情報源とMVPの成立性を確認する段階です。�
 - ログやfixtureに秘密情報が含まれていない。
 - 集計結果から観測値と原本メタデータまで追跡できる。
 
-セットアップ、lint、型チェック、テストの具体的なコマンドは、Phase 1で `pyproject.toml` と実行環境を作成した時点で追記します。
+ローカル開発環境はDocker ComposeでAPI、Worker、選定したDB、artifact storageを起動できるようにします。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。
+
+セットアップ、lint、型チェック、テストの具体的なコマンドは、Phase 1で `pyproject.toml` とDocker環境を作成した時点で追記します。

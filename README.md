@@ -19,14 +19,15 @@ Card PulseはCard Diggerから独立したシステムとして扱います。
 
 ```mermaid
 flowchart LR
-    S[店舗Web・手動ファイル・将来の外部情報源] --> C[Card Pulse]
-    C --> O[(価格観測履歴)]
-    O --> Q[相場照会]
-    Q --> D[Card Digger]
+    S[店舗Web・手動ファイル・将来の外部情報源] --> W[Collection Worker]
+    W --> R[(Raw Artifact Storage)]
+    W --> DB[(Server Database)]
+    DB --> A[Card Pulse API]
+    A --> D[Card Digger PC・スマホ]
     D --> U[仕入れ候補・売却先候補]
 ```
 
-Card DiggerはCard Pulseの内部DBを直接参照しません。相場データの有用性を確認した後、識別子、鮮度、欠損、曖昧一致を含む利用契約を定義します。
+Card DiggerはCard Pulseの内部DBを直接参照せず、HTTPS APIを利用します。API、Collection Worker、DBは別サービスとして扱います。APIの具体的な識別子、認証、versioning、鮮度、欠損、曖昧一致の契約は実装前に定義します。
 
 ## MVP
 
@@ -38,11 +39,12 @@ MVPは小さな縦方向の処理を完成させ、2〜4週間の試験収集で
 | 店舗 | 構造化されたWeb情報源2〜3店舗 |
 | 補助入力 | CSVまたはJSONによる手動取込1系統 |
 | 優先する価格 | 買取価格 |
-| 永続化 | SQLiteとファイルシステム上の原本 |
-| 出力 | 最新価格、中央値、最高値、店舗数、鮮度、価格履歴 |
-| 実行 | ローカルで再現可能なCLIと定期実行想定 |
+| 永続化 | 比較検証後に選定するサーバー型DB。原本storageはDBと分離 |
+| 提供 | 最新価格、中央値、最高値、店舗数、鮮度、価格履歴を返すAPI |
+| 実行 | APIとCollection Workerを別サービスとして実行 |
+| ローカル開発 | Docker Composeでサービス構成を再現 |
 
-Xの全自動監視、画像によるカード同定、全TCG・全店舗対応、リアルタイム更新、クラウド運用、Card Digger UIはMVPに含めません。詳しい範囲と完了条件は [MVP定義](docs/product/mvp.md) を参照してください。
+Xの全自動監視、画像によるカード同定、全TCG・全店舗対応、リアルタイム更新、高可用性・自動拡張を備えた本番運用、Card Digger UIはMVPに含めません。詳しい範囲と完了条件は [MVP定義](docs/product/mvp.md) を参照してください。
 
 ## 設計原則
 
@@ -89,6 +91,7 @@ Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンテ
 | [Research](docs/research/README.md) | 構想・調査時点の資料 |
 | [Runbooks](docs/runbooks/README.md) | 運用、障害対応、復元手順 |
 | [Experiments](docs/experiments/README.md) | 試験収集の結果と継続判断 |
+| [Learning](docs/learning/README.md) | 設計判断を理解するための学習資料 |
 
 DBの列定義はマイグレーション、内部データ契約はコード上の型、外部入出力は `schemas/` の機械可読な定義を正とします。Markdownには、それらの意味、不変条件、変更理由を記録します。
 
@@ -105,9 +108,12 @@ card-pulse/
 │   ├── application/            # 取込、レビュー、照会のユースケースとport
 │   ├── adapters/
 │   │   ├── sources/            # 店舗・手動取込など情報源固有の実装
-│   │   ├── persistence/        # SQLiteなどの永続化実装
+│   │   ├── persistence/        # 選定したDBの永続化実装
 │   │   └── artifacts/          # 取得原本の保存実装
-│   └── entrypoints/            # CLI、将来のscheduler/API
+│   └── entrypoints/
+│       ├── api/                 # Card Digger等から利用するHTTPS API
+│       ├── worker/              # 収集・解析job
+│       └── cli/                 # 開発・運用コマンド
 ├── migrations/                 # DBスキーマ変更
 ├── schemas/                    # 外部入出力のバージョン付きschema
 ├── tests/
@@ -119,4 +125,6 @@ card-pulse/
 └── var/                        # 原本、DB、ログ、レビュー対象。Git管理外
 ```
 
-ソースコード、実行環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 0に従い、情報源候補の調査とMVP対象の選定です。
+ローカル開発にはDocker Composeを使い、API、Worker、DB、artifact storageの接続関係と依存versionを一つの手順で再現します。Dockerが再現できる範囲と限界は [Dockerによる環境再現](docs/learning/docker-environment-reproduction.md) を参照してください。
+
+ソースコード、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 0に従い、情報源候補の調査とMVP対象を選定し、Phase 1でDB選定とローカル開発環境を整えることです。

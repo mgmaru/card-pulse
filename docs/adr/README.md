@@ -18,6 +18,9 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | --- | --- | --- |
 | [0001](0001-modular-monolith.md) | Accepted | MVPをPythonのモジュラーモノリスとして構成する |
 | [0002](0002-append-only-provenance.md) | Accepted | 原本と価格観測を追記型で保存し、出典を追跡する |
-| [0003](0003-mvp-local-storage.md) | Accepted | MVPはSQLiteとローカルファイルシステムを使う |
+| [0003](0003-mvp-local-storage.md) | Superseded | MVPはSQLiteとローカルファイルシステムを使う |
+| [0004](0004-server-database-selection.md) | Accepted | 構造化データをサーバー側DBに置き、製品は比較検証後に選定する |
+| [0005](0005-separate-runtime-services.md) | Accepted | API、Collection Worker、DBを別serviceとして扱う |
+| [0006](0006-docker-compose-local-development.md) | Accepted | Docker Composeでローカルのservice topologyを再現する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
