@@ -93,6 +93,18 @@ Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンテ
 | [Experiments](docs/experiments/README.md) | 試験収集の結果と継続判断 |
 | [Learning](docs/learning/README.md) | 設計判断を理解するための学習資料 |
 
+## Codex Skills
+
+このリポジトリ固有の反復作業は `.agents/skills/` に定義します。
+
+| Skill | 用途 |
+| --- | --- |
+| [`check-doc-links`](.agents/skills/check-doc-links/SKILL.md) | Markdownの内部ファイル・画像・見出しanchorを検査する |
+| [`maintain-roadmap`](.agents/skills/maintain-roadmap/SKILL.md) | 安定ID、状態、依存関係、割り込み・再開を保ってroadmapを更新する |
+| [`write-project-docs`](.agents/skills/write-project-docs/SKILL.md) | 文書種別とsource of truthに従ってプロジェクト文書を作成・改訂する |
+
+SkillはCodexの作業手順を定義し、検査スクリプトは決定的な結果を返します。将来のCIでも同じスクリプトを呼び出し、Skillの発動有無に依存せず検査できる構成とします。
+
 DBの列定義はマイグレーション、内部データ契約はコード上の型、外部入出力は `schemas/` の機械可読な定義を正とします。Markdownには、それらの意味、不変条件、変更理由を記録します。
 
 ## 開発ディレクトリ

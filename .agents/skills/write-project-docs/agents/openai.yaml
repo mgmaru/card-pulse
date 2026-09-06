@@ -1,0 +1,6 @@
+interface:
+  display_name: "Write Project Docs"
+  short_description: "Create consistent Card Pulse documentation"
+  default_prompt: "Use $write-project-docs to create or revise project documentation."
+policy:
+  allow_implicit_invocation: true

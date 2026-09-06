@@ -35,3 +35,5 @@
 - Record decisions that affect several components or constrain future work in an ADR.
 - Add a checked date and supporting URL to source restrictions, prices, rate limits, terms, and other volatile external facts.
 - Prefer migrations, code types, and machine-readable schemas as field-level sources of truth. Document their meaning and invariants instead of duplicating them.
+- Run `python3 .agents/skills/check-doc-links/scripts/check_doc_links.py` after creating, editing, moving, renaming, or deleting Markdown documentation.
+- Use the repository roadmap task format and run `python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py` after roadmap changes.

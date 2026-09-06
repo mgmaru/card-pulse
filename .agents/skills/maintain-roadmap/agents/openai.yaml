@@ -1,0 +1,6 @@
+interface:
+  display_name: "Maintain Roadmap"
+  short_description: "Manage stable roadmap tasks and interruptions"
+  default_prompt: "Use $maintain-roadmap to update the project roadmap safely."
+policy:
+  allow_implicit_invocation: true

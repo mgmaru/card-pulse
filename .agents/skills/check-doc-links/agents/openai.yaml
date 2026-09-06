@@ -1,0 +1,6 @@
+interface:
+  display_name: "Check Doc Links"
+  short_description: "Validate internal Markdown links and anchors"
+  default_prompt: "Use $check-doc-links to validate documentation links in this repository."
+policy:
+  allow_implicit_invocation: true

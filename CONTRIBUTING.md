@@ -16,6 +16,8 @@ Card Pulseは現在、情報源とMVPの成立性を確認する段階です。�
 - 日付で変わり得る外部情報には確認日と根拠URLを記載します。
 - DB列やschemaをMarkdownへ複製せず、意味と不変条件を記載します。
 - 実装によって振る舞い、契約、運用方法が変わる場合は、同じ変更で対応する文書を更新します。
+- Markdown変更後は `python3 .agents/skills/check-doc-links/scripts/check_doc_links.py` を実行します。
+- Roadmap変更後は `python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py` も実行します。
 
 ## 実装上の原則
 
