@@ -103,7 +103,7 @@ Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンテ
 | [`maintain-roadmap`](.agents/skills/maintain-roadmap/SKILL.md) | 安定ID、状態、依存関係、割り込み・再開を保ってroadmapを更新する |
 | [`write-project-docs`](.agents/skills/write-project-docs/SKILL.md) | 文書種別とsource of truthに従ってプロジェクト文書を作成・改訂する |
 
-SkillはCodexの作業手順を定義し、検査スクリプトは決定的な結果を返します。将来のCIでも同じスクリプトを呼び出し、Skillの発動有無に依存せず検査できる構成とします。
+SkillはCodexの作業手順を定義し、検査スクリプトは決定的な結果を返します。CIでも同じスクリプトを呼び出し、Skillの発動有無に依存せず検査します。
 
 DBの列定義はマイグレーション、内部データ契約はコード上の型、外部入出力は `schemas/` の機械可読な定義を正とします。Markdownには、それらの意味、不変条件、変更理由を記録します。
 

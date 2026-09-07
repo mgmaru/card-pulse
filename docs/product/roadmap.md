@@ -2,9 +2,9 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-06
+> 最終更新: 2026-09-07
 >
-> Next task ID: `CP-0059`
+> Next task ID: `CP-0065`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -17,6 +17,8 @@
 - [ ] `CP-0003` `planned` — robots.txt、利用規約、アクセス制限、再利用条件、取得間隔を確認し、確認日と根拠URLを記録する。
 - [ ] `CP-0004` `planned` — 代表サンプルを少量だけ確認し、カード識別子と価格条件を抽出できるか比較する。
 - [ ] `CP-0005` `planned` — `1 TCG × 2〜3店舗` を選び、選定理由と見送った候補をADRに残す。
+- [ ] `CP-0064` `planned` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
+  - Done when: ADR ID、状態、日付、必須section、一覧、置換関係を検査するvalidatorを既存の`write-project-docs`とCIへ統合するか、見送る理由を記録する。
 
 完了条件: 対象、情報源、取得間隔、利用上の制約が決まり、後続作業が未調査事項で停止しない。
 
@@ -32,6 +34,14 @@
 - [ ] `CP-0013` `planned` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
+- [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
+  - Evidence: `.github/workflows/ci.yml`でpull requestと`main`へのpushを対象に両方の検査を実行する。
+- [ ] `CP-0060` `planned` — format、lint、型チェック、unit testをGitHub Actionsへ追加する。
+  - Depends on: `CP-0013`
+  - Done when: 対応するPython versionとlockfileを使い、ローカルと同じ品質検査がpull requestで成功する。
+- [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
+  - Depends on: `CP-0012`
+  - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
@@ -45,6 +55,9 @@
 - [ ] `CP-0021` `planned` — DBとartifact storageの片方だけが成功した場合の状態、再実行、孤立データ処理を決める。
 - [ ] `CP-0022` `planned` — API、Worker、migration用のDB roleと権限を分ける。
 - [ ] `CP-0023` `planned` — 欠損、不正金額、重複、再解析、rollbackのテストを作る。
+- [ ] `CP-0062` `planned` — 選定DBを使うmigrationとintegration testをGitHub Actionsへ追加する。
+  - Depends on: `CP-0012`, `CP-0023`
+  - Done when: 空DBへのmigrationと保存・冪等性・rollbackの検査が本番候補と同じDB engineで成功する。
 
 完了条件: 固定JSON/CSVサンプルを投入し、追跡可能で重複のない観測値を再現できる。
 
@@ -55,6 +68,9 @@
 - [ ] `CP-0026` `planned` — 保存が許される固定fixtureを用意し、ネットワークなしでparserをテストする。
 - [ ] `CP-0027` `planned` — 0件、必須項目欠損、件数急減を正常終了にしない検知を作る。
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
+- [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
+  - Depends on: `CP-0017`, `CP-0026`
+  - Done when: 保存と再利用が許可されたfixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。
 
 完了条件: 2〜3店舗のデータが同じ観測モデルに入り、一つの失敗が他へ波及しない。
 
