@@ -4,7 +4,16 @@
 
 - Card Pulse is an independent TCG market-data foundation. It collects, preserves, normalizes, and queries price observations.
 - Read `README.md`, `docs/product/mvp.md`, and relevant ADRs before changing behavior or architecture.
-- Treat `docs/research/` as historical or time-bound research, not as the current specification.
+
+## Context selection
+
+- Use filenames and targeted searches to select context. Read only files and sections directly relevant to the current task, and do not preload entire documentation directories.
+- Do not search, enumerate, or read `_prompts/`. When the user explicitly supplies an excerpt from `_prompts/`, treat that excerpt as the request without opening the surrounding file. Inspect a prompt file only when the user explicitly asks for that file itself.
+- Do not read `docs/learning/` or `docs/research/` by default. Read a specific file only when the task explicitly concerns that material or a current source-of-truth document identifies it as required input.
+- Treat `docs/research/` as historical or time-bound evidence, not as the current specification.
+- Read `docs/experiments/`, `docs/runbooks/`, `docs/sources/`, and files named `template.md` only when the current task concerns that document type or component.
+- Do not recursively inspect `var/`. Access only an explicitly identified artifact when the current task requires it.
+- Deterministic validation scripts and CI may scan paths excluded from normal context selection. Do not load the scanned file contents into model context unless one of the conditions above applies.
 
 ## Language and naming
 
