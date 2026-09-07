@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-07
 >
-> Next task ID: `CP-0065`
+> Next task ID: `CP-0066`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -42,6 +42,9 @@
 - [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`
   - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。
+- [ ] `CP-0065` `planned` — ブランチ・PR運用を定義し、作業開始Skillと`main`の保護設定を整える。
+  - Depends on: `CP-0059`
+  - Done when: [CONTRIBUTING.md](../../CONTRIBUTING.md)をsource of truthとしてSkillが作業ブランチを作成でき、`main`へのマージにpull requestとCI成功が必要になり、ブランチ名CIの導入判断が記録されている。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
