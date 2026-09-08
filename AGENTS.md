@@ -38,6 +38,15 @@
 - Use only sanitized fixtures whose storage and reuse are permitted.
 - Test idempotency, provenance, missing fields, malformed prices, parser regressions, and failure isolation when those areas change.
 
+## Parallel research
+
+- Use subagents when two or more independent research tracks can run concurrently and parallel execution is likely to save time or improve evidence coverage.
+- During Phase 0, assign one named source to each `source_feasibility_researcher`, then use `source_restrictions_researcher` to verify restrictions for shortlisted sources.
+- Keep research subagents read-only. They return evidence and unresolved questions; the primary agent reconciles conflicts and makes repository edits.
+- Only the primary agent delegates Phase 0 research. Research subagents must not create additional subagents.
+- Wait for all requested research results before making a recommendation, and distinguish confirmed facts, inferences, conflicts, and unknowns in the synthesis.
+- Keep short or tightly dependent work in the primary agent when delegation would add more coordination than useful independent investigation.
+
 ## Documentation
 
 - Update relevant product, architecture, contract, source, or runbook documents with behavioral changes.
