@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-09
 >
-> Next task ID: `CP-0066`
+> Next task ID: `CP-0067`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -19,9 +19,11 @@
 - [x] `CP-0003` `done` — robots.txt、利用規約、アクセス制限、再利用条件、取得間隔を確認し、確認日と根拠URLを記録する。
   - Evidence: 6情報源の[初期比較](../sources/source-map.md#初期比較)と各個別文書の「取得と利用上の制約」に、2026-09-09時点のrobots.txt、規約、自動取得、保存・fixture、取得間隔、根拠URLを記録した。
 - [ ] `CP-0004` `planned` — 代表サンプルを少量だけ確認し、カード識別子と価格条件を抽出できるか比較する。
+  - Done when: 各値を原本から直接抽出する値、source metadataまたは取込設定から得る値、欠損可能な値、同定に必要な値へ分類し、同じカードの候補数と価格条件の比較可否を情報源間で記録している。
 - [ ] `CP-0005` `planned` — `1 TCG × 2〜3店舗` を選び、選定理由と見送った候補をADRに残す。
-- [ ] `CP-0064` `planned` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
+- [x] `CP-0064` `done` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
   - Done when: ADR ID、状態、日付、必須section、一覧、置換関係を検査するvalidatorを既存の`write-project-docs`とCIへ統合するか、見送る理由を記録する。
+  - Evidence: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)に、現時点で専用validatorを導入しない理由と再検討条件を記録した。
 
 完了条件: 対象、情報源、取得間隔、利用上の制約が決まり、後続作業が未調査事項で停止しない。
 
@@ -56,8 +58,12 @@
 - [ ] `CP-0016` `planned` — [データモデル](../architecture/data-model.md) を実データに合わせて確定する。
 - [ ] `CP-0017` `planned` — [Collector契約](../contracts/collector.md) を型として実装する。
 - [ ] `CP-0018` `planned` — 原本メタデータと価格観測値の追記型保存を実装する。
+- [ ] `CP-0066` `planned` — processing run、extracted record、observation candidateを追記型で保存し、欠損した解析結果を確定観測と分離する。
+  - Depends on: `CP-0016`, `CP-0017`, `CP-0018`
+  - Done when: 原本から各中間結果、確定観測またはreviewまで追跡でき、同じ原本の再処理が以前の結果を上書きしない。
 - [ ] `CP-0019` `planned` — content hash、情報源内ID、観測値の重複防止規則を決める。
 - [ ] `CP-0020` `planned` — 取込、再解析、review確定のtransaction boundaryを定義する。
+  - Depends on: `CP-0018`, `CP-0066`
 - [ ] `CP-0021` `planned` — DBとartifact storageの片方だけが成功した場合の状態、再実行、孤立データ処理を決める。
 - [ ] `CP-0022` `planned` — API、Worker、migration用のDB roleと権限を分ける。
 - [ ] `CP-0023` `planned` — 欠損、不正金額、重複、再解析、rollbackのテストを作る。
@@ -65,7 +71,7 @@
   - Depends on: `CP-0012`, `CP-0023`
   - Done when: 空DBへのmigrationと保存・冪等性・rollbackの検査が本番候補と同じDB engineで成功する。
 
-完了条件: 固定JSON/CSVサンプルを投入し、追跡可能で重複のない観測値を再現できる。
+完了条件: 固定JSON/CSVサンプルを投入し、欠損した抽出結果を確定観測と分離しながら、追跡可能で重複のない観測値を再現できる。
 
 ## Phase 3 — Web Collectorを縦に通す
 
@@ -83,7 +89,7 @@
 ## Phase 4 — カード同定、相場照会、最小APIを作る
 
 - [ ] `CP-0029` `planned` — TCG、セット、カード番号、レアリティ、版、言語による同定規則を検証する。
-- [ ] `CP-0030` `planned` — 原文表記、正規化表記、別名、同定状態を保存する。
+- [ ] `CP-0030` `planned` — 原文表記、正規化表記、別名、同定試行、候補と根拠を保存する。
 - [ ] `CP-0031` `planned` — 完全一致、自動候補、レビュー必須、未同定を区別する。
 - [ ] `CP-0032` `planned` — 最新価格、中央値、最高値、最低値、店舗数、鮮度、スプレッドを計算する。
 - [ ] `CP-0033` `planned` — 集計値と根拠観測をCLIまたはJSONで確認できるようにする。
@@ -112,8 +118,9 @@
 構造化Webだけでは不足すると判明した場合に進む。
 
 - [ ] `CP-0046` `planned` — 画像、店舗、URL、公開日時を一緒に受け取る手動取込を作る。
-- [ ] `CP-0047` `planned` — 原画像を先に保存し、OCR結果を派生データとして残す。
-- [ ] `CP-0048` `planned` — 項目単位のconfidenceとreview queueを実装する。
+- [ ] `CP-0047` `planned` — 原画像を先に保存し、OCR結果をextracted recordとして派生関係付きで残す。
+  - Depends on: `CP-0066`
+- [ ] `CP-0048` `planned` — 項目単位の抽出confidenceとカード同定のmatch scoreを分け、review queueを実装する。
 - [ ] `CP-0049` `planned` — 誤認識率と1枚あたりのレビュー時間を測る。
 
 完了条件: 人間の修正時間を含め、手入力より有利か判断できる。

@@ -2,7 +2,7 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-06
+> 最終更新: 2026-09-09
 
 Card Pulse内で同じ言葉を異なる意味に使わないための共通定義である。コード上の型や列名を決める際も、この意味に合わせる。
 
@@ -13,9 +13,14 @@ Card Pulse内で同じ言葉を異なる意味に使わないための共通定�
 | 取込実行 | ingest run | 一回の取得または手動投入処理。開始・終了、件数、結果、エラーを持つ |
 | 原本 | raw artifact | 解析前に取得したHTTP response、JSON、HTML、PDF、画像、CSV等とそのメタデータ |
 | content hash | content hash | 原本内容から計算した識別値。重複検知と同一内容の追跡に使う |
-| parser | parser | 保存済み原本を読み、共通の観測候補へ変換する処理 |
+| parser | parser | 保存済み原本を読み、原文値と欠損を保持した抽出結果へ変換するprocessor |
 | parser version | parser version | どの解析ロジックが結果を生成したか識別する値 |
-| 観測候補 | observation candidate | parserまたは手動入力が生成した、検証・同定前の価格情報 |
+| 処理実行 | processing run | 保存済み原本へparser、OCR等のprocessorを一回適用した記録。processorと設定のversion、結果、エラーを持つ |
+| 抽出結果 | extracted record | 原本から読み取った一行または一組の項目。業務上の必須項目が欠けていても、原文値、欠損、原本内位置、警告を保持する |
+| 値の由来 | field evidence | 値が原本、source metadata、取込設定、正規化処理、人間の判断のどこから得られたかを示す情報 |
+| 抽出confidence | extraction confidence | OCR等のprocessorが項目をどの程度確からしく読み取ったかを表す値。カード同定の確からしさとは区別する |
+| 処理問題 | processing issue | 通信失敗、processor停止、必須項目欠損等により処理または候補への昇格を完了できなかった状態と理由。人間によるカード選択では解決しない |
+| 観測候補 | observation candidate | 抽出結果または手動入力から生成され、価格候補としての最低条件を満たした、カード同定前の価格情報 |
 | 価格観測 | price observation | ある店舗が、あるカードについて、特定時点と条件で提示した価格の確定記録 |
 | 価格種別 | price type | 買取、販売、出品、成約、落札など、金額が表す意味 |
 | 公開日時 | published at | 店舗または情報源が価格情報を公開した日時 |
@@ -23,13 +28,15 @@ Card Pulse内で同じ言葉を異なる意味に使わないための共通定�
 | 有効期限 | valid until | 情報源が明示した価格の適用期限。鮮度の推定値とは区別する |
 | 鮮度 | freshness | 公開日時、取得日時、有効期限、情報源の性質から、判断に使える新しさを表したもの |
 | カード同定 | card identity resolution | 原文のカード表記を、TCG、セット、番号、レアリティ、版、言語等から内部カードへ対応付けること |
+| 同定試行 | identity resolution attempt | 観測候補と内部カードの対応を評価した一回の記録。matcherのversion、候補、根拠、match score、結果を持つ |
+| match score | identity match score | 観測候補と内部カードの対応の確からしさを表す値。抽出confidenceとは区別する |
 | 原文表記 | raw label | 情報源に記載されていたカード名、番号、レアリティ等の文字列 |
 | 正規化表記 | normalized label | 比較や検索のために表記揺れを整えた値。原文表記を置き換えない |
 | 同定状態 | identity status | 確定、自動候補、レビュー必須、未同定など、対応付けの確からしさを示す状態 |
-| レビュー対象 | review item | 人間の判断が必要な候補、欠損、異常値、同定結果と、その理由を保持する記録 |
+| レビュー対象 | review item | 原本と候補を見て人間が解決できる抽出結果、欠損、異常値、同定結果と、その理由を保持する記録 |
 | 相場情報 | market summary | 観測集合から計算する中央値、最高値、最低値、店舗数、スプレッド、鮮度等。単一の価格とは限らない |
 | スプレッド | spread | 同じ条件にそろえた観測値間の価格差。計算方法はquery契約で定義する |
-| 再解析 | reparse | 保存済み原本を新しい、または指定したparser versionで再度解析すること |
+| 再解析 | reparse | 保存済み原本を新しい、または指定したprocessor versionと設定で再度解析すること |
 | 訂正 | correction | 過去の確定記録を消さず、その記録を無効化・置換する新しい履歴を追加すること |
 
 ## 未確定の用語

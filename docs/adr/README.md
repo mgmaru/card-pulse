@@ -22,5 +22,12 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | [0004](0004-server-database-selection.md) | Accepted | 構造化データをサーバー側DBに置き、製品は比較検証後に選定する |
 | [0005](0005-separate-runtime-services.md) | Accepted | API、Collection Worker、DBを別serviceとして扱う |
 | [0006](0006-docker-compose-local-development.md) | Accepted | Docker Composeでローカルのservice topologyを再現する |
+| [0007](0007-layered-ingestion-data.md) | Accepted | 情報源横断の構造化データを一つの論理DBで管理し、処理段階で分離する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
+
+## ADR管理の機械検査
+
+2026-09-09時点では、ADR専用validatorの導入を見送る。ADRは7件で、一覧、状態、日付、必須section、置換関係を手作業で確認できる規模にあり、既存の文書リンク検査でファイルと参照の欠落は検出できる。現時点で専用validatorが防ぐ具体的な不整合も発生していないため、検査規則とCIを増やす費用を先に負わない。
+
+ADR件数の増加、状態遷移や置換関係の不整合、一覧更新漏れのいずれかが発生した時点で、専用validatorを再検討する。

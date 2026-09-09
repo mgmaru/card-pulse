@@ -49,8 +49,9 @@ Xの全自動監視、画像によるカード同定、全TCG・全店舗対応�
 ## 設計原則
 
 - 取得原本と確定した価格観測値を追記型で保存する。
-- URL、情報源内ID、公開日時、取得日時、content hash、parser versionから結果を追跡できるようにする。
+- source、原本メタデータ、processor version、同定規則から結果を追跡できるようにする。
 - 取得と解析を分け、保存済み原本から再解析できるようにする。
+- 欠損を許す抽出結果、価格候補、同定試行、確定観測を分け、各段階を原本から追跡できるようにする。
 - 情報源固有の仕様をsource adapter内に閉じ込める。
 - 同一入力の再実行で観測値を重複させない。
 - カード同定が曖昧なデータは確定値に混ぜず、レビュー待ちにする。
@@ -63,15 +64,18 @@ Xの全自動監視、画像によるカード同定、全TCG・全店舗対応�
 flowchart LR
     A[情報源] --> B[Fetch]
     B --> C[原本保存]
-    C --> D[Parse]
-    D --> E[共通候補形式]
-    E --> F[検証・カード同定]
-    F -->|確定| G[(Price Observation)]
-    F -->|曖昧| H[Review Queue]
-    G --> I[相場照会]
+    C --> D[Processing<br/>Parse・将来のOCR]
+    D --> E[抽出結果<br/>欠損許容]
+    E --> F[観測候補への昇格]
+    F --> G[検証・カード同定]
+    G -->|確定| H[(Price Observation)]
+    G -->|曖昧| I[Review Queue]
+    H --> J[相場照会]
 ```
 
-Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンティティと不変条件は [データモデル](docs/architecture/data-model.md) に記載します。
+不完全な解析結果は中間段階へ保存し、比較に必要な条件とカード同定が確定した結果だけを価格観測へ昇格させます。構造化データは情報源ごとのDBに分けず、一つの論理的なsystem of record内で処理段階ごとに分離します。
+
+Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンティティと不変条件は [データモデル](docs/architecture/data-model.md)、この構成を選んだ理由は [ADR-0007](docs/adr/0007-layered-ingestion-data.md) に記載します。
 
 ## ドキュメント
 
