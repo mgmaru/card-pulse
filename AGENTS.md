@@ -55,3 +55,4 @@
 - Prefer migrations, code types, and machine-readable schemas as field-level sources of truth. Document their meaning and invariants instead of duplicating them.
 - Run `python3 .agents/skills/check-doc-links/scripts/check_doc_links.py` after creating, editing, moving, renaming, or deleting Markdown documentation.
 - Use the repository roadmap task format and run `python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py` after roadmap changes.
+- Run `python3 .agents/skills/maintain-tool-parity/scripts/check_tool_parity.py --write` after changing an agent definition or adding a skill, then commit the generated files.

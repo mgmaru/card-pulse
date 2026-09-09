@@ -18,6 +18,7 @@ Card Pulseは現在、情報源とMVPの成立性を確認する段階です。�
 - 実装によって振る舞い、契約、運用方法が変わる場合は、同じ変更で対応する文書を更新します。
 - Markdown変更後は `python3 .agents/skills/check-doc-links/scripts/check_doc_links.py` を実行します。
 - Roadmap変更後は `python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py` も実行します。
+- エージェント定義やSkillを変更した後は `python3 .agents/skills/maintain-tool-parity/scripts/check_tool_parity.py --write` を実行し、生成されたファイルも一緒にコミットします。
 
 ## 実装上の原則
 

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 .agents/skills/check-doc-links/scripts/check_doc_links.py:*)",
+      "Bash(python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py:*)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "ask": [
+      "Read(./_prompts/**)",
+      "Read(./var/**)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}

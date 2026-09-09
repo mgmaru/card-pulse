@@ -97,17 +97,26 @@ Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンテ
 | [Experiments](docs/experiments/README.md) | 試験収集の結果と継続判断 |
 | [Learning](docs/learning/README.md) | 設計判断を理解するための学習資料 |
 
-## Codex Skills
+## エージェント設定
 
-このリポジトリ固有の反復作業は `.agents/skills/` に定義します。
+このリポジトリはOpenAI CodexとClaude Codeの両方で開発します。2つのツールは読み取るパスが異なるため、共有できるものは1箇所に置き、ツール固有の形式が必要なものだけを生成または symlink で各ツールへ渡します。
+
+| ディレクトリ | 役割 | 読むツール |
+| --- | --- | --- |
+| `.agents/` | Skillとエージェント定義の実体。SKILL.md標準の共有置き場 | Codexが直接読む。Claude Codeは `.claude/skills/` のsymlink経由 |
+| `.codex/` | Codex専用。`config.toml` と生成されたsubagent定義 | Codexのみ |
+| `.claude/` | Claude Code専用。設定、生成されたsubagent定義、`.agents/skills/` へのsymlink | Claude Codeのみ |
+
+Skillが `.agents/` の共有で、subagentがツールごとに分かれているのは、両ツールの探索パスの違いによります。Skillは `.agents/skills/` がCodex側の標準パスなので実体を1つ置いてClaude Codeを symlink で合流させられますが、subagentには共通の置き場が無いため、`.agents/agents/` の中立定義から各ツールの形式へ生成します。リポジトリ指示は `AGENTS.md` が正で、`CLAUDE.md` が `@AGENTS.md` で取り込みます。
 
 | Skill | 用途 |
 | --- | --- |
 | [`check-doc-links`](.agents/skills/check-doc-links/SKILL.md) | Markdownの内部ファイル・画像・見出しanchorを検査する |
 | [`maintain-roadmap`](.agents/skills/maintain-roadmap/SKILL.md) | 安定ID、状態、依存関係、割り込み・再開を保ってroadmapを更新する |
 | [`write-project-docs`](.agents/skills/write-project-docs/SKILL.md) | 文書種別とsource of truthに従ってプロジェクト文書を作成・改訂する |
+| [`maintain-tool-parity`](.agents/skills/maintain-tool-parity/SKILL.md) | エージェント定義とSkillを両ツールへ反映し、乖離を検査する |
 
-SkillはCodexの作業手順を定義し、検査スクリプトは決定的な結果を返します。CIでも同じスクリプトを呼び出し、Skillの発動有無に依存せず検査します。
+Skillは反復作業の手順を定義し、検査スクリプトは決定的な結果を返します。CIでも同じスクリプトを呼び出し、Skillの発動有無やツールの違いに依存せず検査します。
 
 DBの列定義はマイグレーション、内部データ契約はコード上の型、外部入出力は `schemas/` の機械可読な定義を正とします。Markdownには、それらの意味、不変条件、変更理由を記録します。
 
@@ -117,6 +126,9 @@ MVPは単一のPythonパッケージによるモジュラーモノリスとし�
 
 ```text
 card-pulse/
+├── .agents/                    # Skillとエージェント定義の実体。両ツールで共有
+├── .codex/                     # Codex専用の設定と生成されたsubagent定義
+├── .claude/                    # Claude Code専用の設定、生成物、Skillへのsymlink
 ├── docs/                       # プロダクト、設計、判断、運用の文書
 ├── config/                     # 実行設定の例。秘密情報は置かない
 ├── src/card_pulse/
