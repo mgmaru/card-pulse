@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-09
 >
-> Next task ID: `CP-0067`
+> Next task ID: `CP-0068`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -24,6 +24,8 @@
 - [x] `CP-0064` `done` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
   - Done when: ADR ID、状態、日付、必須section、一覧、置換関係を検査するvalidatorを既存の`write-project-docs`とCIへ統合するか、見送る理由を記録する。
   - Evidence: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)に、現時点で専用validatorを導入しない理由と再検討条件を記録した。
+- [x] `CP-0067` `done` — カードの内部主キーと外部識別子の役割を決定する。
+  - Evidence: [ADR-0008](../adr/0008-opaque-card-identity-id.md)で、意味を持たない内部UUID、属性による照合、namespace付き外部参照、誤同定の追記型訂正を決定し、データモデルとCollector契約へ反映した。
 
 完了条件: 対象、情報源、取得間隔、利用上の制約が決まり、後続作業が未調査事項で停止しない。
 

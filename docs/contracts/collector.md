@@ -57,6 +57,8 @@ Source adapterは次を担当しない。
 
 applicationはcontent hashを計算し、artifact storeへ保存してからparseへ渡す。
 
+`source_item_id`は原本と情報源内の対象を追跡する値であり、Card Pulseのカード主キーとして扱わない。同じ印刷仕様のカードを複数情報源へまたがって識別する内部UUIDは、source adapterではなく後続のカード同定で確定する。
+
 ## Processingの出力
 
 parseまたは将来のOCR等を一回実行するたびに`processing_run`を作る。処理実行は少なくとも、`artifact_id`、processor名・version、結果へ影響する設定参照、開始・終了日時、状態、抽出件数、error codeを表現できるようにする。
@@ -103,6 +105,8 @@ processorは`extracted_record`を0件以上返す。抽出結果は原本に存�
 
 金額を抽出できない、通貨を決められない等、最低条件を満たさない結果は`extracted_record`と昇格できなかった理由を残し、観測候補へ昇格させない。人間が原本から値を修正できる場合はreview対象にできる。カード同定に必要な項目が不足していても価格候補の最低条件を満たす場合は観測候補とし、後続の同定でreview要否を決める。
 
+カード番号、セット、レアリティ、版、言語等は同定候補を作るための原文属性であり、連結値やhashを内部カードの主キーとして発行しない。内部UUID、属性、外部IDを分離する判断は[ADR-0008](../adr/0008-opaque-card-identity-id.md)を参照する。
+
 ## 結果と失敗
 
 最低限、次を機械的に区別できる結果型を設ける。
@@ -141,4 +145,4 @@ processorは`extracted_record`を0件以上返す。抽出結果は原本に存�
 - source固有の項目名や構造を`extracted_record`の原文値と由来情報に閉じ込め、確定観測のdomain型とschemaへ漏らさない。
 - fixtureやエラーに秘密情報を含めない。
 
-層を分ける理由、単一の論理DBを維持する判断、物理分離の再検討条件は、[ADR-0007](../adr/0007-layered-ingestion-data.md)を参照する。
+層を分ける理由、単一の論理DBを維持する判断、物理分離の再検討条件は[ADR-0007](../adr/0007-layered-ingestion-data.md)、カードの内部UUIDと外部IDを分離する判断は[ADR-0008](../adr/0008-opaque-card-identity-id.md)を参照する。

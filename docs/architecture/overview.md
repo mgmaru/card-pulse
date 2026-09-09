@@ -85,7 +85,7 @@ domainとapplicationはsource adapter、特定のDB製品、object storage、Web
 
 ### Database
 
-- source、shop、ingest run、raw artifact metadata、processing run、extracted record、observation candidate、identity resolution attempt、card identity、price observation、review itemを保存する。
+- source、shop、ingest run、raw artifact metadata、processing run、extracted record、observation candidate、identity resolution attempt、card identity、card external reference、price observation、review itemを保存する。
 - API、Worker、migration用に異なるroleを持たせる。
 - private networkからのみ接続可能にする。
 - 製品選定では整合性、transaction、query、backup・復元、運用、費用を評価する。
@@ -164,5 +164,6 @@ serviceを分けても、DB schemaとAPI・Workerの依存は残る。影響を�
 - [ADR-0005: runtime serviceの分離](../adr/0005-separate-runtime-services.md)
 - [ADR-0006: Dockerによるローカル開発](../adr/0006-docker-compose-local-development.md)
 - [ADR-0007: 処理段階による構造化データの分離](../adr/0007-layered-ingestion-data.md)
+- [ADR-0008: カード同定の内部UUID](../adr/0008-opaque-card-identity-id.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)
