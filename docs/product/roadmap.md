@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-09
 >
-> Next task ID: `CP-0068`
+> Next task ID: `CP-0069`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -57,7 +57,11 @@
 
 ## Phase 2 — データ契約と永続化を作る
 
+- [ ] `CP-0068` `planned` — 確定済みの価格観測とカード同定について、再審査、隔離、無効化、置換、復帰の条件と状態遷移を定義する。
+  - Depends on: `CP-0004`
+  - Done when: 再審査の契機と確定判断、理由・根拠・実行者・規則version、集計対象可否、置換先を追跡する方法が定まり、誤価格、誤同定、parser不具合、重複、復帰の各ケースをtest可能な形でデータモデルまたは契約文書に記録している。
 - [ ] `CP-0016` `planned` — [データモデル](../architecture/data-model.md) を実データに合わせて確定する。
+  - Depends on: `CP-0068`
 - [ ] `CP-0017` `planned` — [Collector契約](../contracts/collector.md) を型として実装する。
 - [ ] `CP-0018` `planned` — 原本メタデータと価格観測値の追記型保存を実装する。
 - [ ] `CP-0066` `planned` — processing run、extracted record、observation candidateを追記型で保存し、欠損した解析結果を確定観測と分離する。
