@@ -2,7 +2,7 @@
 
 > source slug: `dragonstar`
 >
-> 状態: 保留
+> 状態: 見送り
 >
 > 最終確認日: 2026-09-09
 >
@@ -58,11 +58,12 @@ robots.txtを確認できない状態とCloudflare challengeは、取得禁止�
 
 ## 代表サンプル
 
-- 確認したURLまたはローカルartifact ID: [メガゲンガーex](https://buy.dorasuta.jp/pokemon-card/product?pid=634348)
+- 確認したURLまたはローカルartifact ID: [SAR メガレックウザex](https://buy.dorasuta.jp/pokemon-card/product?pid=703744)、[メガゲンガーex](https://buy.dorasuta.jp/pokemon-card/product?pid=634348)
 - 確認日: 2026-09-09
 - 保存可否: 不明。ローカルartifactとfixtureは作成していない
 - 必須項目の取得可否: TCG、カード名、カード番号、シリーズ、価格種別、金額、通貨、状態、source内IDを取得可能。公開日時は取得不可
-- 同じカードを他店舗と照合できるか: `series + printed card number + rarity + title qualifier`を主軸に照合できる見込み。`PN`だけでは自動確定しない
+- 同じカードを他店舗と照合できるか: `メガレックウザex`はM6に4候補あったが、`M6 + 110/076 + SAR`では1候補になり、状態Aのネット買取参考価格は25,000円だった。遊々亭の同一属性と金額まで一致し、晴れる屋2の33,000円とも属性上は比較できる。チャネルと状態条件を観測ごとに保持する
+- 欠損可能な値: レアリティが未登録の商品、言語、公開日時、有効期限、更新頻度。TCG、ネット買取チャネル、通貨、取得日時、原本URL、parser versionはsource metadataまたは取込設定から補う
 - 想定されるparser変更リスク: 中。HTML構造、ページング、名称中の版表現、「未登録」レアリティに依存する
 
 ## 取得設計案
@@ -77,7 +78,7 @@ robots.txtを確認できない状態とCloudflare challengeは、取得禁止�
 
 ## 判断
 
-- 推奨状態: 保留
+- 推奨状態: 見送り
 - 理由: 技術的には有力だが、robots.txtを確認できず、自動取得、原本保存、fixture利用の許諾と契約窓口も未確定
 - 再検討条件: 権利主体を確認し、対象URL、User-Agent、頻度、raw artifact、抽出値の履歴、fixture、第三者提供について書面承諾を得る
-- 関連ADR: 未作成
+- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)

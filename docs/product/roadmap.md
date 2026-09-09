@@ -2,9 +2,9 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-09
+> 最終更新: 2026-09-10
 >
-> Next task ID: `CP-0070`
+> Next task ID: `CP-0071`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -18,9 +18,15 @@
   - Evidence: [遊々亭](../sources/yuyutei.md#データ形式)、[カードラッシュ](../sources/cardrush.md#データ形式)、[晴れる屋2](../sources/hareruya2.md#データ形式)、[ドラゴンスター](../sources/dragonstar.md#データ形式)、[トレトク](../sources/toretoku.md#データ形式)、[フルコンプ](../sources/fullcomp.md#データ形式)の個別文書に、公開形式、識別項目、価格条件、更新頻度、取得難易度と未確認事項を記録した。
 - [x] `CP-0003` `done` — robots.txt、利用規約、アクセス制限、再利用条件、取得間隔を確認し、確認日と根拠URLを記録する。
   - Evidence: 6情報源の[初期比較](../sources/source-map.md#初期比較)と各個別文書の「取得と利用上の制約」に、2026-09-09時点のrobots.txt、規約、自動取得、保存・fixture、取得間隔、根拠URLを記録した。
-- [ ] `CP-0004` `planned` — 代表サンプルを少量だけ確認し、カード識別子と価格条件を抽出できるか比較する。
+- [x] `CP-0004` `done` — 代表サンプルを少量だけ確認し、カード識別子と価格条件を抽出できるか比較する。
   - Done when: 各値を原本から直接抽出する値、source metadataまたは取込設定から得る値、欠損可能な値、同定に必要な値へ分類し、同じカードの候補数と価格条件の比較可否を情報源間で記録している。
-- [ ] `CP-0005` `planned` — `1 TCG × 2〜3店舗` を選び、選定理由と見送った候補をADRに残す。
+  - Evidence: 6情報源の値分類、候補衝突、価格条件を[代表サンプル比較](../sources/source-map.md#代表サンプル比較)へ記録し、3情報源で同じカードが各1候補になることと価格条件の差を[同一カード比較](../sources/source-map.md#同一カードの情報源間比較)で確認した。
+- [x] `CP-0005` `done` — `1 TCG × 2〜3店舗` を選び、選定理由と見送った候補をADRに残す。
+  - Depends on: `CP-0004`
+  - Evidence: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)でポケモンカードゲーム、晴れる屋2、遊々亭を第一選定とし、カードラッシュ、トレトク、ドラゴンスター、フルコンプを見送った理由と取得許諾の条件を記録した。
+- [ ] `CP-0070` `planned` — 晴れる屋2と遊々亭について、自動取得、保存、fixture、派生集計提供の書面許諾を得る。
+  - Depends on: `CP-0005`
+  - Done when: 両情報源の対象URL、User-Agent、取得頻度、raw artifactと抽出履歴の保持、sanitized fixture、Card Diggerへの派生集計提供、停止・削除条件が書面で確認され、source文書へ確認日と根拠を記録している。
 - [x] `CP-0064` `done` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
   - Done when: ADR ID、状態、日付、必須section、一覧、置換関係を検査するvalidatorを既存の`write-project-docs`とCIへ統合するか、見送る理由を記録する。
   - Evidence: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)に、現時点で専用validatorを導入しない理由と再検討条件を記録した。
@@ -85,10 +91,13 @@
 ## Phase 3 — Web Collectorを縦に通す
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
+  - Depends on: `CP-0070`
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行をsource設定として定義する。
 - [ ] `CP-0026` `planned` — 保存が許される固定fixtureを用意し、ネットワークなしでparserをテストする。
+  - Depends on: `CP-0070`
 - [ ] `CP-0027` `planned` — 0件、必須項目欠損、件数急減を正常終了にしない検知を作る。
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
+  - Depends on: `CP-0070`
 - [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
   - Depends on: `CP-0017`, `CP-0026`
   - Done when: 保存と再利用が許可されたfixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。

@@ -35,8 +35,8 @@ MVPは小さな縦方向の処理を完成させ、2〜4週間の試験収集で
 
 | 項目 | 対象 |
 | --- | --- |
-| TCG | 情報源調査で選ぶ1種類 |
-| 店舗 | 構造化されたWeb情報源2〜3店舗 |
+| TCG | ポケモンカードゲーム |
+| 店舗 | 晴れる屋2と遊々亭の2店舗。書面許諾後に取得を開始 |
 | 補助入力 | CSVまたはJSONによる手動取込1系統 |
 | 優先する価格 | 買取価格 |
 | 永続化 | 比較検証後に選定するサーバー型DB。原本storageはDBと分離 |
@@ -155,4 +155,4 @@ card-pulse/
 
 ローカル開発にはDocker Composeを使い、API、Worker、DB、artifact storageの接続関係と依存versionを一つの手順で再現します。Dockerが再現できる範囲と限界は [Dockerによる環境再現](docs/learning/docker-environment-reproduction.md) を参照してください。
 
-ソースコード、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 0に従い、情報源候補の調査とMVP対象を選定し、Phase 1でDB選定とローカル開発環境を整えることです。
+ソースコード、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 0に従って選定情報源の書面許諾を確認し、並行してPhase 1でDB選定とローカル開発環境を整えることです。

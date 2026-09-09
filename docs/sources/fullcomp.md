@@ -2,7 +2,7 @@
 
 > source slug: `fullcomp`
 >
-> 状態: 保留
+> 状態: 見送り
 >
 > 最終確認日: 2026-09-09
 >
@@ -60,11 +60,12 @@ robots.txtに禁止がないことと利用条件が公開されていないこ�
 
 ## 代表サンプル
 
-- 確認したURLまたはローカルartifact ID: [池袋店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)
+- 確認したURLまたはローカルartifact ID: [池袋店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)、[横浜店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19645)、[横浜店 ポケモンカード旧弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19596)
 - 確認日: 2026-09-09
 - 保存可否: 不明。ローカルartifactとfixtureは作成していない
 - 必須項目の取得可否: TCG、店舗、カード名、カード番号、set code、レアリティ、価格種別、金額、通貨、基準日を取得可能。カード単位IDと公開時刻は取得不可
-- 同じカードを他店舗と照合できるか: `set code + printed card number + rarity`を主軸に照合できる見込み。版と名称を補助確認する
+- 同じカードを他店舗と照合できるか: `ゾロア + 020/019 + MEZ`は同じ基準日に池袋店と横浜店で各1候補、いずれも1,000円だった。一方、`200/SV-P + P`は通常品と未開封品の2候補になり、名称中の封入状態まで必要になる
+- 欠損可能な値: カード単位ID、独立した番号・set code、公式セット名、言語、版、状態ランク、公開時刻、有効期限。TCG、host、店舗slug、価格条件、通貨、取得日時、parser versionはsource metadataまたは取込設定から補う
 - 想定されるparser変更リスク: 中〜高。無名配列の列順、名称中の番号とset code、CMSとDataTablesのtemplateに依存する
 
 ## 取得設計案
@@ -79,7 +80,7 @@ robots.txtに禁止がないことと利用条件が公開されていないこ�
 
 ## 判断
 
-- 推奨状態: 保留
+- 推奨状態: 見送り
 - 理由: 店舗別価格は有用だが、カード単位IDがなくparser変更リスクが高い。運営会社ごとの自動取得、保存、fixture利用条件も未確認
 - 再検討条件: 対象店舗とhostを限定し、運営会社から取得頻度、raw artifact、抽出履歴、fixture、第三者提供の書面承諾を得る
-- 関連ADR: 未作成
+- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
