@@ -81,4 +81,4 @@ robots.txtのクロール条件は、履歴保存、再解析、API提供、fixt
 - 推奨状態: 見送り
 - 理由: カード同定項目は最も充実しているが、商業利用とコンテンツ二次利用の制限がCard Pulseの保存・再提供に抵触し得る
 - 再検討条件: 自動取得、raw artifact、抽出値の長期履歴、非公開・公開fixture、Card Diggerへの提供について書面承諾を得る
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)

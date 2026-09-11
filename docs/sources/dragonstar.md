@@ -2,9 +2,9 @@
 
 > source slug: `dragonstar`
 >
-> 状態: 見送り
+> 状態: 保留
 >
-> 最終確認日: 2026-09-09
+> 最終確認日: 2026-09-11
 >
 > 調査者: Codex
 
@@ -46,20 +46,20 @@
 
 | 確認項目 | 結果 | 確認日 | 根拠URL・箇所 |
 | --- | --- | --- | --- |
-| robots.txt | `buy.dorasuta.jp`と`dorasuta.jp`の両方でCloudflare challengeによるHTTP 403となり、規則を確認できない | 2026-09-09 | [ネット買取robots.txt](https://buy.dorasuta.jp/robots.txt)、[総合サイトrobots.txt](https://dorasuta.jp/robots.txt) |
-| 利用規約 | ネット買取固有の規約は確認できない。総合サイトの会員規約は不正アクセス、運営妨害、知的財産権侵害等を禁止し、スクレイピングの明示条項はない | 2026-09-09 | [会員規約](https://dorasuta.jp/member/agreement) |
-| 自動アクセス | 許可・禁止の明文とrate limitを確認できず不明。Cloudflare challengeを回避しない | 2026-09-09 | [会員規約](https://dorasuta.jp/member/agreement)、両hostのrobots.txt |
-| 取得データの保存 | raw HTML、抽出価格、価格履歴の内部保存を許可・禁止する明文を確認できず不明 | 2026-09-09 | [会員規約](https://dorasuta.jp/member/agreement)、[利用ガイド](https://dorasuta.jp/guideline) |
-| fixtureの保存・共有 | 非公開・公開fixtureとも許諾を確認できない。書面承諾なしに保存・共有しない | 2026-09-09 | [会員規約](https://dorasuta.jp/member/agreement) |
-| 推奨取得間隔 | 公式値なし。許諾を得るまで自動取得しない。許諾後も一覧を日次以下、逐次取得する案を先方と合意する | 2026-09-09 | robots.txt取得結果、[商品一覧](https://buy.dorasuta.jp/pokemon-card/product-list) |
-| 認証・Cookie | 公開価格の閲覧に認証は不要。買取申込みには会員登録と本人確認が必要。Cookie利用を明記 | 2026-09-09 | [商品一覧](https://buy.dorasuta.jp/pokemon-card/product-list)、[プライバシーポリシー](https://dorasuta.jp/privacy) |
+| robots.txt | `buy.dorasuta.jp`と`dorasuta.jp`の両方でCloudflare challengeによるHTTP 403となり、規則を確認できない | 2026-09-11 | [ネット買取robots.txt](https://buy.dorasuta.jp/robots.txt)、[総合サイトrobots.txt](https://dorasuta.jp/robots.txt) |
+| 利用規約 | ネット買取固有の規約は確認できない。総合サイトの会員規約は不正アクセス、運営妨害、知的財産権侵害等を禁止し、スクレイピングの明示条項はない | 2026-09-11 | [会員規約](https://dorasuta.jp/member/agreement) |
+| 自動アクセス | 許可・禁止の明文とrate limitを確認できず不明。Cloudflare challengeを回避しない | 2026-09-11 | [会員規約](https://dorasuta.jp/member/agreement)、両hostのrobots.txt |
+| 取得データの保存 | raw HTML、抽出価格、価格履歴の内部保存を許可・禁止する明文を確認できず不明 | 2026-09-11 | [会員規約](https://dorasuta.jp/member/agreement)、[利用ガイド](https://dorasuta.jp/guideline) |
+| fixtureの保存・共有 | 非公開・公開fixtureとも許諾を確認できない。書面承諾なしに保存・共有しない | 2026-09-11 | [会員規約](https://dorasuta.jp/member/agreement) |
+| 推奨取得間隔 | 公式値なし。許諾を得るまで自動取得しない。許諾後も一覧を日次以下、逐次取得する案を先方と合意する | 2026-09-11 | robots.txt取得結果、[商品一覧](https://buy.dorasuta.jp/pokemon-card/product-list) |
+| 認証・Cookie | 公開価格の閲覧に認証は不要。買取申込みには会員登録と本人確認が必要。Cookie利用を明記 | 2026-09-11 | [商品一覧](https://buy.dorasuta.jp/pokemon-card/product-list)、[プライバシーポリシー](https://dorasuta.jp/privacy) |
 
 robots.txtを確認できない状態とCloudflare challengeは、取得禁止の規約そのものとは断定しない。一方、技術的な回避を行う根拠にもならない。自動取得、raw artifact、抽出価格の履歴、fixture、第三者提供について、ネット買取の正式な運営・権利主体から書面回答を得るまでCollection Workerによる取得を開始しない。
 
 ## 代表サンプル
 
 - 確認したURLまたはローカルartifact ID: [SAR メガレックウザex](https://buy.dorasuta.jp/pokemon-card/product?pid=703744)、[メガゲンガーex](https://buy.dorasuta.jp/pokemon-card/product?pid=634348)
-- 確認日: 2026-09-09
+- 確認日: 2026-09-11
 - 保存可否: 不明。ローカルartifactとfixtureは作成していない
 - 必須項目の取得可否: TCG、カード名、カード番号、シリーズ、価格種別、金額、通貨、状態、source内IDを取得可能。公開日時は取得不可
 - 同じカードを他店舗と照合できるか: `メガレックウザex`はM6に4候補あったが、`M6 + 110/076 + SAR`では1候補になり、状態Aのネット買取参考価格は25,000円だった。遊々亭の同一属性と金額まで一致し、晴れる屋2の33,000円とも属性上は比較できる。チャネルと状態条件を観測ごとに保持する
@@ -78,7 +78,7 @@ robots.txtを確認できない状態とCloudflare challengeは、取得禁止�
 
 ## 判断
 
-- 推奨状態: 見送り
-- 理由: 技術的には有力だが、robots.txtを確認できず、自動取得、原本保存、fixture利用の許諾と契約窓口も未確定
-- 再検討条件: 権利主体を確認し、対象URL、User-Agent、頻度、raw artifact、抽出値の履歴、fixture、第三者提供について書面承諾を得る
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 推奨状態: 保留
+- 理由: 技術的には有力だが、robots.txtを確認できず、自動取得、原本保存、fixture利用の許諾主体と取得安定性に独立した検証が必要なため、現在の3候補へ含めない
+- 再検討条件: `CP-0070`の結果後、追加情報源が必要な場合に`CP-0071`で権利主体、Cloudflareの挙動、対象URL、User-Agent、頻度、raw artifact、抽出値の履歴、fixture、第三者提供を検証する
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)

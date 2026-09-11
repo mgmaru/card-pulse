@@ -81,4 +81,4 @@
 - 推奨状態: MVP選定
 - 理由: HTMLから詳細な識別項目と現行買取価格を取得でき、晴れる屋2と同一カードを照合できるため第一選定とした。自動取得、抽出値の保存、fixture利用は許諾まで開始しない
 - 再検討条件: 運営から対象path、頻度、保存項目、raw artifact保持、fixture共有を含む書面許諾を得る
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)

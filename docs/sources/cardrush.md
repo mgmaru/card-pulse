@@ -81,4 +81,4 @@
 - 推奨状態: 見送り
 - 理由: 技術的には必要項目を取得しやすいが、正式提携なしの自動取得が明示的に禁止されている
 - 再検討条件: 正式提携により、取得方式、用途、保存期間、raw artifact、fixture、rate limit、表示・再利用条件を文書で合意する
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)

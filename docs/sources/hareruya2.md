@@ -81,4 +81,4 @@ API hostから晴れる屋2の利用規約へのリンクや専用API規約を�
 - 推奨状態: MVP選定
 - 理由: 構造化JSONは候補中で最も扱いやすく、遊々亭と同一カードを照合できるため第一選定とした。自動取得、内部保存、fixture利用は許諾まで開始しない
 - 再検討条件: 運営からAPI hostの位置づけ、取得頻度、条件付きGET、内部利用、raw artifact保持、fixture共有の書面承諾を得る
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)

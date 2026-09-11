@@ -24,7 +24,8 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | [0006](0006-docker-compose-local-development.md) | Accepted | Docker Composeでローカルのservice topologyを再現する |
 | [0007](0007-layered-ingestion-data.md) | Accepted | 情報源横断の構造化データを一つの論理DBで管理し、処理段階で分離する |
 | [0008](0008-opaque-card-identity-id.md) | Accepted | カード同定には意味を持たない内部UUIDを使い、属性と外部IDを分離する |
-| [0009](0009-pokemon-mvp-sources.md) | Accepted | ポケモンカードのMVP情報源に晴れる屋2と遊々亭を選ぶ |
+| [0009](0009-pokemon-mvp-sources.md) | Superseded | ポケモンカードのMVP情報源に晴れる屋2と遊々亭を選ぶ |
+| [0010](0010-pokemon-mvp-source-candidates.md) | Accepted | ポケモンカードのMVP情報源候補に晴れる屋2、遊々亭、フルコンプ池袋店を選ぶ |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 

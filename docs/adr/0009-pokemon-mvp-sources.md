@@ -1,10 +1,10 @@
 # ADR-0009: ポケモンカードのMVP情報源に晴れる屋2と遊々亭を選ぶ
 
-- 状態: Accepted
+- 状態: Superseded
 - 日付: 2026-09-10
 - 決定者: プロジェクトオーナー
 - 置換するADR: なし
-- 置換されたADR: なし
+- 置換されたADR: [ADR-0010](0010-pokemon-mvp-source-candidates.md)
 
 ## Context
 

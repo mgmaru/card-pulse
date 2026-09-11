@@ -2,9 +2,9 @@
 
 > source slug: `fullcomp`
 >
-> 状態: 見送り
+> 状態: MVP選定
 >
-> 最終確認日: 2026-09-09
+> 最終確認日: 2026-09-11
 >
 > 調査者: Codex
 
@@ -12,15 +12,15 @@
 
 フルコンプは複数店舗の店頭買取参考価格を公開している。価格表は店舗ごとのHTML記事で、確認したページではJavaScript変数`tableData`に全行が埋め込まれていた。カード番号、set code、レアリティ、価格を抽出できる一方、カード単位のsource内IDがなく、列の意味もHTML上で明示されていない。
 
-フルコンプは店舗群で運営主体と情報公開hostが分かれる。[買取情報](https://www.fullcomp.jp/kaitori/)から、株式会社イントゥ運営と確認できる店舗は`www.fullcomp.jp`、株式会社インスパイア側の店舗は`inspire-jp.net`へ遷移する。この文書のデータ形式調査は`www.fullcomp.jp`の店舗別価格表を対象とし、別hostのadapterと利用許諾を同一とみなさない。
+フルコンプは店舗群で運営主体と情報公開hostが分かれる。MVP候補は株式会社イントゥ運営の池袋店と`www.fullcomp.jp/ikebukuro/`配下の対象買取表に限定する。株式会社インスパイア運営店舗、別host、他店舗のadapterと利用許諾を同一とみなさない。
 
-- 運営主体: 株式会社イントゥと株式会社インスパイア。対象店舗ごとの確認が必要
-- 店舗・支店: 全国18店舗と案内。価格は店舗ごとに異なる
+- 運営主体: 株式会社イントゥ。MVP候補とする池袋店について確認
+- 店舗・支店: 池袋店。価格は他店舗と異なる可能性がある
 - 対象TCG: ポケモンカードゲーム。ほかのTCGも扱う
-- 主なURL: [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)、[横浜店の価格表](https://www.fullcomp.jp/yokohama/kaitori/19596)
+- 主なURL: [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の買取情報](https://www.fullcomp.jp/ikebukuro/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)、[問い合わせ](https://www.fullcomp.jp/contact/)
 - 提供する価格種別: 店舗別の店頭買取参考価格
 
-`www.fullcomp.jp`側の8店舗が株式会社イントゥ運営であることは[フルコンプ秋葉原EC店の会社概要](https://www.fullcomp-akihabara-ec.com/html/company.html)、株式会社インスパイア側の店舗は[事業・店舗一覧](https://inspire-jp.net/business/fullcomp/)で確認した。[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/)も両社を共同利用の管理者として列挙する。
+[問い合わせ](https://www.fullcomp.jp/contact/)は池袋店を株式会社イントゥ運営店舗として表示する。`www.fullcomp.jp`側の8店舗が同社運営であることは[フルコンプ秋葉原EC店の会社概要](https://www.fullcomp-akihabara-ec.com/html/company.html)でも確認した。[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/)は株式会社イントゥと株式会社インスパイアの双方を個人情報の共同利用管理者として列挙するが、価格データの許諾主体を示す根拠には使わない。
 
 ## データ形式
 
@@ -48,20 +48,20 @@
 
 | 確認項目 | 結果 | 確認日 | 根拠URL・箇所 |
 | --- | --- | --- | --- |
-| robots.txt | `www.fullcomp.jp`はsitemapだけを記載し、`Disallow`と`Crawl-delay`はない。利用許諾とは扱わない | 2026-09-09 | [robots.txt](https://www.fullcomp.jp/robots.txt) |
-| 利用規約 | 買取ページから参照できるコンテンツ利用規約、転載条件、データ利用条件を確認できず不明。著作権表示はある | 2026-09-09 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
-| 自動アクセス | 許可・禁止、User-Agent、rate limitの明文を確認できず不明 | 2026-09-09 | [robots.txt](https://www.fullcomp.jp/robots.txt)、[買取情報](https://www.fullcomp.jp/kaitori/) |
-| 取得データの保存 | raw HTML、抽出価格、履歴の内部保存を許可・禁止する明文を確認できず不明 | 2026-09-09 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
-| fixtureの保存・共有 | 非公開・公開fixtureの利用許諾を確認できない。書面承諾なしに保存・共有しない | 2026-09-09 | [買取情報](https://www.fullcomp.jp/kaitori/) |
-| 推奨取得間隔 | 公式値なし。許諾を得るまで自動取得しない。許諾後は更新索引を日次以下で確認し、更新された価格表だけを逐次取得する案 | 2026-09-09 | [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872) |
-| 認証・Cookie | 公開価格表の閲覧に認証は不要。サイトはCookieを使い、無効時に一部サービスが制限され得る | 2026-09-09 | [プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
+| robots.txt | `Disallow: /wp/wp-admin/`とsitemapを記載し、池袋店の買取表pathを禁止していない。利用許諾とは扱わない | 2026-09-11 | [robots.txt](https://www.fullcomp.jp/robots.txt) |
+| 利用規約 | 買取ページから参照できるコンテンツ利用規約、転載条件、データ利用条件を確認できず不明。著作権表示はある | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
+| 自動アクセス | 許可・禁止、User-Agent、rate limitの明文を確認できず不明 | 2026-09-11 | [robots.txt](https://www.fullcomp.jp/robots.txt)、[買取情報](https://www.fullcomp.jp/kaitori/) |
+| 取得データの保存 | raw HTML、抽出価格、履歴の内部保存を許可・禁止する明文を確認できず不明 | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
+| fixtureの保存・共有 | 非公開・公開fixtureの利用許諾を確認できない。書面承諾なしに保存・共有しない | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/) |
+| 推奨取得間隔 | 公式値なし。許諾を得るまで自動取得しない。許諾後は更新索引を日次以下で確認し、更新された価格表だけを逐次取得する案 | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872) |
+| 認証・Cookie | 公開価格表の閲覧に認証は不要。サイトはCookieを使い、無効時に一部サービスが制限され得る | 2026-09-11 | [プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
 
-robots.txtに禁止がないことと利用条件が公開されていないことを、保存・再利用の許諾とは扱わない。運営会社とhostごとに、自動取得、raw artifact、抽出価格履歴、fixture、第三者提供を確認する。少なくとも`www.fullcomp.jp`と`inspire-jp.net`を一つの許諾や一つのparserで扱わない。
+robots.txtで対象pathが禁止されていないことと利用条件が公開されていないことを、保存・再利用の許諾とは扱わない。池袋店と`www.fullcomp.jp/ikebukuro/`配下の対象URLを明示し、自動取得、raw artifact、抽出価格履歴、fixture、第三者提供を株式会社イントゥへ確認する。
 
 ## 代表サンプル
 
 - 確認したURLまたはローカルartifact ID: [池袋店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)、[横浜店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19645)、[横浜店 ポケモンカード旧弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19596)
-- 確認日: 2026-09-09
+- 確認日: 2026-09-11
 - 保存可否: 不明。ローカルartifactとfixtureは作成していない
 - 必須項目の取得可否: TCG、店舗、カード名、カード番号、set code、レアリティ、価格種別、金額、通貨、基準日を取得可能。カード単位IDと公開時刻は取得不可
 - 同じカードを他店舗と照合できるか: `ゾロア + 020/019 + MEZ`は同じ基準日に池袋店と横浜店で各1候補、いずれも1,000円だった。一方、`200/SV-P + P`は通常品と未開封品の2候補になり、名称中の封入状態まで必要になる
@@ -80,7 +80,7 @@ robots.txtに禁止がないことと利用条件が公開されていないこ�
 
 ## 判断
 
-- 推奨状態: 見送り
-- 理由: 店舗別価格は有用だが、カード単位IDがなくparser変更リスクが高い。運営会社ごとの自動取得、保存、fixture利用条件も未確認
-- 再検討条件: 対象店舗とhostを限定し、運営会社から取得頻度、raw artifact、抽出履歴、fixture、第三者提供の書面承諾を得る
-- 関連ADR: [ADR-0009](../adr/0009-pokemon-mvp-sources.md)
+- 推奨状態: MVP選定
+- 理由: 池袋店と`www.fullcomp.jp`へ範囲を限定すれば許諾主体と対象URLを明示して照会でき、店舗別の基準日付き価格を既存2候補へ追加できる。カード単位ID欠損とparser変更リスクを受け入れ、自動取得、保存、fixture利用は許諾まで開始しない
+- 再検討条件: `CP-0070`で株式会社イントゥから取得頻度、raw artifact、抽出履歴、fixture、第三者提供の書面回答を得て、許諾済みfixtureで名称解析と記事間schemaを検証する
+- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)
