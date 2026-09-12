@@ -102,6 +102,8 @@ MVPではsingle primaryで開始し、replica、自動failover、複数region、
 | `DB-SEC-04` | credentialをrepository、container image、log、backup manifestへ保存せず、role単位で他roleを止めずにrotationできること。 |
 | `DB-SEC-05` | 接続、認証失敗、role・権限変更、DDL、backup、restoreを30日間確認できること。価格値を含む全SQL statementの常時記録は要求しない。 |
 
+`DB-SEC-01`が指すloopback、Compose内部network、LAN、認証済みprivate networkの違いは[private networkの種類と使い分け](../learning/private-network-types.md)を参照する。
+
 ## 運用と費用
 
 | ID | 要件 |
