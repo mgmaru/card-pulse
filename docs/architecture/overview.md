@@ -60,7 +60,30 @@ flowchart TB
 | `entrypoints/worker` | 収集・解析jobとschedulerからの起動境界 | application |
 | `entrypoints/cli` | 開発・運用コマンド | application |
 
-domainとapplicationはsource adapter、特定のDB製品、object storage、Web frameworkをimportしない。entrypointが実行時に具体的なadapterを組み合わせる。
+domainとapplicationはsource adapter、特定のDB製品、object storage、Web frameworkをimportしない。entrypointのcomposition rootが実行時に具体的なadapterを組み合わせる。
+
+## 情報源adapterの境界
+
+Collection Workerは取込を実行するruntime serviceであり、情報源固有コードの境界ではない。外部情報源の仕様変更を受け止める単位は、`src/card_pulse/adapters/sources/<source-slug>/`に置くsource adapterとする。一つのsource adapterは一つの安定したsource slugを担当し、別sourceのadapterをimportしない。
+
+情報源固有の変更を閉じ込める論理境界には、production codeであるsource packageに加え、そのsourceの設定、fixture、testを含める。実行時の設定値を`config/`、fixtureを`tests/fixtures/sources/`へ置く場合も、source slugによって所有者を明確にする。情報源の通常の形式変更では、この境界内だけを変更して復旧できる構成を維持する。
+
+| 境界内に置くもの | 境界外に置くもの |
+| --- | --- |
+| URLとrequestの組立て、source固有のheader・Cookie・取得上限の解釈 | scheduler、取込runの開始・完了、sourceの運用状態 |
+| redirect、media type、応答内の目印、schema・DOM・列数等の検査 | artifact storageとDBへの保存、transaction、冪等性 |
+| 保存済み原本を読むparser、原文項目の抽出、source内IDの解釈 | 観測候補への共通昇格、source横断のカード同定・重複排除 |
+| source固有のerror分類材料、設定、fixture、parser regression test | 価格観測のdomain規則、相場集計、API、Card Digger向け評価 |
+
+source adapterとapplicationの境界は、applicationが定義する取得port、処理port、共通の入出力型、構造化された失敗型である。source adapterは、HTTP clientのresponse object、HTMLのDOM object、CSS selector、source固有のJSON model、source固有例外を境界外へ返さない。原文構造を失わず保存する必要がある値は、共通`RawArtifactInput`のmetadataまたは`ExtractedRecord`の原文値・由来情報として渡す。applicationはそれらを保存・伝達できるが、source slugによる条件分岐で意味を解釈しない。
+
+具体的なsource adapterを選択する責務はentrypointのcomposition rootに置く。source slugとadapterの対応表以外に、`if source_slug == ...`のような分岐をapplication、domain、永続化、APIへ置かない。source adapterはapplicationが定義するportへ依存できるが、applicationとdomainからsource packageへ依存しない。source adapterからDB、artifact storage、APIを直接呼び出さない。
+
+複数sourceで共有するHTTP transportは、各source packageの外側にsource-neutralなadapter moduleとして置き、request送信、timeout、response受信、設定されたbackoffの実行等、情報源の意味を知らない機構に限定する。source adapterはこのtransportへsource設定を渡し、一回のfetch内で許されるrequest単位の再試行を委譲する。共有処理へsource固有のURL、selector、JSON key、価格条件、source slugによる分岐を入れない。共通化するには二つ以上のadapterで同じ意味と変更理由を持つことを確認し、単にコード形状が似ているだけの処理は各source境界に残す。
+
+source adapterは外部形式を共通契約へ変換するが、新しい情報源に共通domainで意味を持つ価格種別や状態条件が現れた場合、その情報をadapter内で捨てない。共通契約で損失なく表現できない事実は原文値と由来を保持してreviewへ送り、Collector契約またはdomain modelの変更として判断する。この場合の変更は境界漏れではなく、Card Pulseが扱う共通の意味の変更として記録する。
+
+実行時は一つのsourceに一つの`ingest_run`と例外境界を設け、通常の通信・解析・データ品質の失敗を他sourceのrunへ波及させない。このコード境界は、同じWorker process全体の停止、メモリ枯渇、CPU占有まで物理的に隔離するものではない。実測によりprocess単位の隔離が必要になった場合は、sourceごとのWorker分離を新しいADRで判断する。
 
 ## Serviceの責務
 

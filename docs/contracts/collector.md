@@ -22,25 +22,47 @@ validate / identify -> price observation or review item
 
 Python上の正確なprotocolと型定義は実装時のコードを正とする。
 
+## 境界と依存規則
+
+外部情報源の仕様を受け止めるproduction codeの境界は、`src/card_pulse/adapters/sources/<source-slug>/`のsource packageである。URL、request手順、応答構造、source固有の検査、parser、source内IDの解釈は担当sourceのpackageへ置く。source固有の設定、fixture、testは別directoryに置けるが、source slugで所有関係を明示する。
+
+applicationは取得と処理のport、run context、`RawArtifactInput`、`StoredArtifact`、`ExtractedRecord`、共通の結果・失敗型を定義する。正確な型名と分割は実装時に決める。source adapterはこれらのportを実装し、次の値を境界外へ露出しない。
+
+- HTTP library固有のrequest・response・session object
+- HTML parser固有のDOM node、CSS selector、XPath
+- source固有のJSON model、列番号、画面名
+- source固有の未変換例外
+- Cookie、認証情報、challenge token
+
+原文を保持するためのsource固有値は、`metadata`、`raw_fields`、`field_evidence`、構造化されたwarningまたはerror detailとして共通型へ格納できる。applicationは共通項目の検証と保存だけを行い、source固有値を条件分岐で解釈しない。
+
+domainとapplicationは具体的なsource packageをimportしない。source package同士もimportしない。entrypointのcomposition rootだけがsource slugと具体的なadapterを対応付け、applicationのportへ注入する。複数sourceで共有するHTTP transportは各source packageの外側に置くsource-neutralなadapter moduleとし、source slugによる分岐、URL、selector、JSON key、価格条件を持たせない。詳しい責務と変更時の判断は[情報源adapterの境界](../architecture/overview.md#情報源adapterの境界)に従う。
+
 ## Source adapterの責務
 
-- source設定で定めた低頻度・逐次の方法でアクセスし、認証やアクセス制御を回避しない。
-- 403、429、CAPTCHA、challengeを受けた場合は自動再試行せず、そのsourceの取得を停止する。
+- source設定から対象URL、request、source固有の取得手順を組み立て、低頻度・逐次の方法でアクセスし、認証やアクセス制御を回避しない。
+- 403、429、CAPTCHA、challengeを検知した場合は、自動再試行しない失敗結果としてapplicationへ返す。applicationは結果を記録してそのsourceの取得を停止する。
 - 未認証の通常requestで発行されたCookieは取込実行内だけの一時的なcookie jarで扱い、実行終了時に破棄する。ブラウザprofile、認証済みsession、他者から受け取ったCookie、challenge通過用tokenを読み込まない。
-- timeout、再試行上限、backoff、User-Agentをsource設定に従って扱う。
+- source設定のtimeout、再試行上限、backoff、User-Agentを、sourceの意味を知らない共通HTTP transportへ渡す。
 - source内ID、URL、MIME type、取得日時、利用可能なら公開日時を原本候補へ付与する。
+- redirect、media type、応答内の目印、schema、DOM、列数等、source固有の応答と構造を検査する。
 - 保存済み原本を、ネットワークアクセスなしで解析する。
 - 原文値、欠損、原本内位置、利用できる項目別confidenceを保持した抽出結果へ変換する。
 - 0件、形式変更、必須項目欠損、認証・制限、通信失敗を区別して報告する。
 
 Source adapterは次を担当しない。
 
+- schedulerと取込jobの開始
+- `ingest_run`とsourceの運用状態の保存
+- raw artifact本体とメタデータの永続化
 - DB tableへの直接書込み
 - source横断のカード同定
 - source横断の重複排除
 - 相場集計
 - review結果の確定
 - Card Digger向けの評価
+
+applicationはsource単位で`ingest_run`を開始し、注入されたadapterを共通port経由で呼び出す。取得結果をartifact storageへ保存してから処理portへ渡し、一回のfetch内で行われたrequest単位の再試行結果を記録する。失敗分類に基づく次回runの許可、source停止、最終成功日時はapplicationが管理する。applicationはsource固有のURL、response object、parser、selector、JSON keyを参照しない。
 
 ## Fetchの出力
 
@@ -192,6 +214,9 @@ sourceは、通常の定期取得を許す状態、取得を停止した状態�
 - source metadataまたは取込設定から与えた値の由来を追跡できる。
 - 不正fixtureを正常な0件として扱わない。
 - source固有の項目名や構造を`extracted_record`の原文値と由来情報に閉じ込め、確定観測のdomain型とschemaへ漏らさない。
+- source adapterがHTTP・DOM・source固有型と未変換例外をapplicationへ返さない。
+- domainとapplicationが具体的なsource packageをimportせず、source package同士にもimport依存がない。
+- 共通HTTP transportがsource slugによる分岐、source固有URL、selector、JSON key、価格条件を持たない。
 - fixtureやエラーに秘密情報を含めない。
 
 層を分ける理由、単一の論理DBを維持する判断、物理分離の再検討条件は[ADR-0007](../adr/0007-layered-ingestion-data.md)、カードの内部UUIDと外部IDを分離する判断は[ADR-0008](../adr/0008-opaque-card-identity-id.md)を参照する。

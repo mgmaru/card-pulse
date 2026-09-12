@@ -88,6 +88,7 @@
 - [ ] `CP-0016` `planned` — [データモデル](../architecture/data-model.md) を実データに合わせて確定する。
   - Depends on: `CP-0068`
 - [ ] `CP-0017` `planned` — [Collector契約](../contracts/collector.md) を型として実装する。
+  - Done when: 取得port、保存済み原本を処理するport、共通の入出力・失敗型が定義され、domainとapplicationが具体的なsource packageをimportせず、HTTP・DOM・source固有型が境界を越えないことをtestで確認している。
 - [ ] `CP-0018` `planned` — 原本メタデータと価格観測値の追記型保存を実装する。
 - [ ] `CP-0066` `planned` — processing run、extracted record、observation candidateを追記型で保存し、欠損した解析結果を確定観測と分離する。
   - Depends on: `CP-0016`, `CP-0017`, `CP-0018`
@@ -108,6 +109,7 @@
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
   - Depends on: `CP-0074`
+  - Done when: URL、request、応答・構造検査、parser、source内IDの解釈が`adapters/sources/<source-slug>/`と所有関係を明示した設定・fixture・testに収まり、entrypointから共通portへ注入され、applicationにsource slugによる処理分岐がない。
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
 - [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
   - Depends on: `CP-0074`
@@ -119,9 +121,10 @@
   - Done when: sourceの運用状態、停止理由、直近試行、最終成功日時、失敗段階、診断証拠を確認でき、一つのsourceを停止したまま他sourceの取込を継続し、parser修正後に回帰test、versionを更新した再解析、dry run、差分確認を経て手動再開できる。
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
   - Depends on: `CP-0074`, `CP-0075`
+  - Done when: 各source packageが相互に依存せず、source固有のURL・応答構造・価格条件の表記と抽出規則が共通HTTP transport、application、domain、永続化、APIへ漏れずに追加でき、共通契約を変更した場合はsource固有事情ではなく共通の意味を追加した根拠を契約文書へ記録している。
 - [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
   - Depends on: `CP-0017`, `CP-0026`, `CP-0027`
-  - Done when: source非由来の合成fixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。source由来fixtureはCIとGitへ含めない。
+  - Done when: source非由来の合成fixtureだけを使い、外部情報源へ接続せずに両方の検査とsource packageの依存境界検査が成功する。source由来fixtureはCIとGitへ含めない。
 
 完了条件: 2〜3店舗のデータが同じ観測モデルに入り、一つの失敗が他へ波及しない。
 
