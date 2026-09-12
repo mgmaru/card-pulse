@@ -1,0 +1,21 @@
+[project]
+name = "card-pulse"
+version = "0.1.0"
+description = "TCGカードの価格観測値を収集・保存・正規化・照会する個人用データ基盤"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = []
+
+# 個人用の非公開アプリ（ADR-0012）のため、package indexへは公開しない。
+classifiers = ["Private :: Do Not Upload"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/card_pulse"]
+
+[tool.uv]
+# ADR-0013でuv自体のversionも固定する。
+required-version = ">=0.12.13,<0.13"

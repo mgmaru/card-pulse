@@ -131,6 +131,9 @@ card-pulse/
 ├── .agents/                    # Skillとエージェント定義の実体。両ツールで共有
 ├── .codex/                     # Codex専用の設定と生成されたsubagent定義
 ├── .claude/                    # Claude Code専用の設定、生成物、Skillへのsymlink
+├── .python-version             # 開発基盤が使うCPythonのpatch version
+├── pyproject.toml              # package metadataと依存関係の宣言
+├── uv.lock                     # 依存解決結果。環境間の再現性の正
 ├── docs/                       # プロダクト、設計、判断、運用の文書
 ├── config/                     # 実行設定の例。秘密情報は置かない
 ├── src/card_pulse/
@@ -157,4 +160,6 @@ card-pulse/
 
 ローカル開発にはDocker Composeを使い、API、Worker、DB、artifact storageの接続関係と依存versionを一つの手順で再現します。Dockerが再現できる範囲と限界は [Dockerによる環境再現](docs/learning/docker-environment-reproduction.md) を参照してください。
 
-ソースコード、Docker環境、DBマイグレーションはまだありません。取得経路は`CP-0074`で確定したため、次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1でPython基盤、DB選定、ローカル開発環境を整えることです。
+Python runtimeとパッケージ管理は [ADR-0013](docs/adr/0013-python-toolchain-and-migrations.md) に従い、CPython 3.14.7 と uv 0.12系へ固定します。`src/card_pulse/` 全体を1つのinstallable packageとし、API、Worker、migration、運用CLIは同じpackageの別entrypointにします。依存関係は `pyproject.toml` で宣言し、解決結果は `uv.lock` を正とします。
+
+現在あるのは責務の境界を表すpackage骨格だけで、ドメイン実装、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1に残るローカルDocker環境（`CP-0012`）と、setup・test・lint・format・型チェックのコマンド定義（`CP-0013`）です。具体的なコマンドは `CP-0013` の完了時に [CONTRIBUTING.md](CONTRIBUTING.md) へ追記します。

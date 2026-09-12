@@ -1,0 +1,1 @@
+"""Raw artifact storage adapters."""

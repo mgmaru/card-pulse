@@ -10,6 +10,8 @@ _prompts/
 __pycache__/
 *.py[cod]
 .python-version
+# 開発基盤のPython patch versionはADR-0013で固定し、リポジトリ直下のものは追跡する。
+!/.python-version
 .venv/
 venv/
 .pytest_cache/

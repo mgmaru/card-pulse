@@ -2,7 +2,7 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-12
+> 最終更新: 2026-09-13
 >
 > Next task ID: `CP-0076`
 
@@ -63,7 +63,8 @@
   - Evidence: [CP-0009 DB PoC結果](../research/database-poc-2026-09.md#結論)に、PostgreSQL 18.6とMariaDB 12.3.3を1倍（約540万行）と10倍（約4,430万行）で測定した結果を記録した。両候補がPoC合格条件10項目を満たし、追記型保存の権限強制、失敗migrationの部分適用、論理復元時間に差が出た。測定harnessは[`scripts/db_poc/`](../../scripts/db_poc/README.md)にある。
 - [x] `CP-0010` `done` — DB製品をADRで決定し、ADR-0004の未決事項を解消する。
   - Evidence: [ADR-0014](../adr/0014-postgresql-self-hosted.md)で、`CP-0009`の実測を根拠にself-hostのPostgreSQL 18を採用し、[ADR-0004](../adr/0004-server-database-selection.md)が残したDB製品とhosting providerの未決事項を解消した。決定を[MVP定義](mvp.md)、[プロダクト構想](vision.md)、[アーキテクチャ概要](../architecture/overview.md)、[DB要件](../architecture/database-requirements.md)、`README.md`へ反映した。
-- [ ] `CP-0011` `planned` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
+- [x] `CP-0011` `done` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
+  - Evidence: [ADR-0013](../adr/0013-python-toolchain-and-migrations.md)に従い、`pyproject.toml`へ`requires-python = ">=3.14,<3.15"`とuvの`required-version`を、`.python-version`へCPython 3.14.7を固定した。`src/card_pulse/`をsrc layoutの単一installable packageとし、[アーキテクチャ概要](../architecture/overview.md#コード構成)の責務境界に対応する12 packageを作成した。生成した`uv.lock`で`uv sync --locked`、全subpackageのimport、wheel buildが成功することを確認した。runtime依存は空とし、開発依存と品質検査コマンドは`CP-0013`、Alembic環境は対象schemaが決まる時点へ残した。
 - [ ] `CP-0012` `planned` — Docker ComposeでAPI、Worker、選定DB、artifact storageを起動するローカル環境を作る。
 - [ ] `CP-0013` `planned` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
