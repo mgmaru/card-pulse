@@ -1,10 +1,10 @@
 # ADR-0010: ポケモンカードのMVP情報源候補に3店舗を選ぶ
 
-- 状態: Accepted
+- 状態: Superseded
 - 日付: 2026-09-11
 - 決定者: プロジェクトオーナー
 - 置換するADR: [ADR-0009](0009-pokemon-mvp-sources.md)
-- 置換されたADR: なし
+- 置換されたADR: [ADR-0011](0011-no-external-source-inquiries.md)
 
 ## Context
 

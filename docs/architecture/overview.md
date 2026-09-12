@@ -2,28 +2,25 @@
 
 > 状態: Accepted for MVP
 >
-> 最終更新: 2026-09-09
+> 最終更新: 2026-09-12
 
 ## システム境界
 
-Card Pulseは外部情報源から価格を取得し、再解析可能な原本と追跡可能な価格観測を保存し、Card Digger等へHTTPS APIで相場情報を提供する独立したシステムである。
+Card Pulseは外部情報源から価格を取得し、再解析可能な原本と追跡可能な価格観測を保存し、プロジェクトオーナー本人のCard Digger等へ非公開APIで相場情報を提供する独立したシステムである。すべてのruntimeと保存データを本人の端末またはprivate network内に置き、Internetへ公開しない。
 
 ```mermaid
 flowchart LR
-    subgraph Clients[利用側]
+    subgraph Owner[本人の管理領域]
+      subgraph Clients[利用側]
         PC[Card Digger PC]
         Mobile[Card Digger スマホ]
-        Other[将来のアプリ]
-    end
-
-    subgraph Public[公開領域]
+      end
+      subgraph Private[非公開runtime]
         API[Card Pulse API]
-    end
-
-    subgraph Private[非公開領域]
         Worker[Collection Worker]
         DB[(Server Database)]
         Artifacts[(Raw Artifact Storage)]
+      end
     end
 
     Sources[店舗Web・手動取込・将来の情報源] --> Worker
@@ -31,13 +28,12 @@ flowchart LR
     Worker --> DB
     PC -->|HTTPS| API
     Mobile -->|HTTPS| API
-    Other -->|HTTPS| API
     API --> DB
 ```
 
-利用側はDBへ直接接続しない。APIだけを公開し、Collection Worker、DB、artifact storageは外部公開しない。API、Worker、DBは別のruntime serviceとして扱う。
+利用側はDBへ直接接続しない。APIも外部公開せず、既定でloopbackまたはCompose内部networkだけにbindする。本人の端末間で利用する場合だけprivate networkと認証を使う。API、Worker、DBは別のruntime serviceとして扱う。
 
-DB製品、hosting provider、台数、可用性構成は未決定である。構造化データをサーバー側DBへ置くことだけを現在の決定とし、製品は要件比較とPoC後にADRで選定する。
+DB製品、本人の端末内またはprivate network内の配置、台数、可用性構成は未決定である。構造化データをサーバー型DBへ置くことだけを現在の決定とし、製品は要件比較とPoC後にADRで選定する。
 
 ## コード構成
 
@@ -70,7 +66,7 @@ domainとapplicationはsource adapter、特定のDB製品、object storage、Web
 
 ### API
 
-- Card Digger等から認証済みHTTPS requestを受ける。
+- 本人が管理するCard Digger等から、loopback、Compose内部network、または認証済みprivate network経由のrequestを受ける。
 - 最新相場、履歴、根拠観測、鮮度、欠損・曖昧状態を返す。
 - DB schemaや内部tableを外部contractへ直接露出しない。
 - 外部情報源への取得をrequest処理中に実行しない。
@@ -87,14 +83,15 @@ domainとapplicationはsource adapter、特定のDB製品、object storage、Web
 
 - source、shop、ingest run、raw artifact metadata、processing run、extracted record、observation candidate、identity resolution attempt、card identity、card external reference、price observation、review itemを保存する。
 - API、Worker、migration用に異なるroleを持たせる。
-- private networkからのみ接続可能にする。
+- Compose内部networkまたは本人のprivate networkからのみ接続可能にする。
 - 製品選定では整合性、transaction、query、backup・復元、運用、費用を評価する。
 
 ### Raw Artifact Storage
 
 - HTML、JSON、CSV、PDF、画像等の原本本体を保存する。
 - DBにはartifact ID、content hash、取得日時、URL、保存参照等のメタデータを持たせる。
-- ローカル開発ではfilesystemまたは互換container、本番では選定したstorage serviceを使う。
+- 本人が管理するfilesystem、volume、またはprivate storage serviceを使う。
+- source由来の原本、fixture、抽出値、価格履歴をGit、CI artifact、公開backupへ含めない。
 
 ## 構造化データの分離方針
 
@@ -139,7 +136,7 @@ flowchart LR
     end
 ```
 
-Dockerでapplication runtime、依存version、network、volume、環境変数の形をそろえる。本番のmanaged service、IAM、load balancer、実network latency、backup、自動拡張、障害復旧まで再現できるとは扱わない。詳しくは [Dockerによる環境再現](../learning/docker-environment-reproduction.md) を参照する。
+Dockerでapplication runtime、依存version、network、volume、環境変数の形をそろえる。本人の端末外に公開する構成はMVPで扱わない。host間のprivate network、認証、実network latency、backup、障害復旧は必要になった時点で別に検証する。詳しくは [Dockerによる環境再現](../learning/docker-environment-reproduction.md) を参照する。
 
 ## 障害と変更の分離
 
@@ -165,5 +162,6 @@ serviceを分けても、DB schemaとAPI・Workerの依存は残る。影響を�
 - [ADR-0006: Dockerによるローカル開発](../adr/0006-docker-compose-local-development.md)
 - [ADR-0007: 処理段階による構造化データの分離](../adr/0007-layered-ingestion-data.md)
 - [ADR-0008: カード同定の内部UUID](../adr/0008-opaque-card-identity-id.md)
+- [ADR-0012: 個人用の非公開運用](../adr/0012-private-personal-operation.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)

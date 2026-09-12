@@ -2,7 +2,7 @@
 
 > source slug: `fullcomp`
 >
-> 状態: MVP選定
+> 状態: MVP採用
 >
 > 最終確認日: 2026-09-11
 >
@@ -48,31 +48,53 @@
 
 | 確認項目 | 結果 | 確認日 | 根拠URL・箇所 |
 | --- | --- | --- | --- |
-| robots.txt | `Disallow: /wp/wp-admin/`とsitemapを記載し、池袋店の買取表pathを禁止していない。利用許諾とは扱わない | 2026-09-11 | [robots.txt](https://www.fullcomp.jp/robots.txt) |
+| robots.txt | `Sitemap`だけを記載し、池袋店の買取表pathに対する`Disallow`、`Crawl-delay`、User-Agent指定はない。利用許諾とは扱わない | 2026-09-11 | [robots.txt](https://www.fullcomp.jp/robots.txt) |
 | 利用規約 | 買取ページから参照できるコンテンツ利用規約、転載条件、データ利用条件を確認できず不明。著作権表示はある | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
 | 自動アクセス | 許可・禁止、User-Agent、rate limitの明文を確認できず不明 | 2026-09-11 | [robots.txt](https://www.fullcomp.jp/robots.txt)、[買取情報](https://www.fullcomp.jp/kaitori/) |
 | 取得データの保存 | raw HTML、抽出価格、履歴の内部保存を許可・禁止する明文を確認できず不明 | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
-| fixtureの保存・共有 | 非公開・公開fixtureの利用許諾を確認できない。書面承諾なしに保存・共有しない | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/) |
-| 推奨取得間隔 | 公式値なし。許諾を得るまで自動取得しない。許諾後は更新索引を日次以下で確認し、更新された価格表だけを逐次取得する案 | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872) |
+| fixtureの保存・共有 | 公開条件上の許諾範囲は不明。[ADR-0012](../adr/0012-private-personal-operation.md)により、生HTMLとsource由来fixtureは本人のGit管理外領域だけに保存し、共有しない | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/) |
+| 推奨取得間隔 | 公式値なし。MVPでは更新索引を日次1回以下で確認し、更新された池袋店の価格表だけを逐次取得する | 2026-09-11 | [買取情報](https://www.fullcomp.jp/kaitori/)、[池袋店の価格表](https://www.fullcomp.jp/ikebukuro/kaitori/18872) |
 | 認証・Cookie | 公開価格表の閲覧に認証は不要。サイトはCookieを使い、無効時に一部サービスが制限され得る | 2026-09-11 | [プライバシーポリシー](https://www.fullcomp.jp/privacypolicy/) |
 
-robots.txtで対象pathが禁止されていないことと利用条件が公開されていないことを、保存・再利用の許諾とは扱わない。池袋店と`www.fullcomp.jp/ikebukuro/`配下の対象URLを明示し、自動取得、raw artifact、抽出価格履歴、fixture、第三者提供を株式会社イントゥへ確認する。
+robots.txtで対象pathが禁止されていないことと利用条件が公開されていないことを、保存・再利用の許諾とは扱わない。[ADR-0012](../adr/0012-private-personal-operation.md)の個人・非公開境界で、池袋店の対象pathだけを本人のローカル環境から取得し、raw artifactとsource由来fixtureはGit管理外領域だけに保存する。
+
+2026-09-11に固定の調査用User-Agentで池袋店の価格表を1回確認し、認証challenge、Cookie、JavaScript実行なしの通常GETで`200`を返した。現行のrobots.txtは、同日の先行確認で記録した`/wp/wp-admin/`の禁止を含まず`Sitemap`だけを返したため、現在の応答に訂正した。この応答差を継続取得の許諾または安定性保証には使わない。
+
+## 個人・非公開MVPの判断
+
+- 対象HTMLの未認証取得と既存候補との属性照合は技術的に可能である
+- User-Agent、取得頻度、raw artifactと抽出履歴の保持、sanitized fixture、Card Diggerへの派生集計、停止・削除条件は公開条件で確認できない
+- [ADR-0012](../adr/0012-private-personal-operation.md)により、許諾済みとは扱わず、本人のローカル環境だけで使う3番目のMVP情報源として採用する
+
+API、取得原本、source由来fixture、抽出値、価格履歴は第三者へ公開または提供しない。利用者の追加、公開、共有、第三者向け提供または販売へ範囲を変える場合は、新しいADRで利用条件を再判断する。
 
 ## 代表サンプル
 
 - 確認したURLまたはローカルartifact ID: [池袋店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/ikebukuro/kaitori/18872)、[横浜店 ポケモンカード最新弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19645)、[横浜店 ポケモンカード旧弾買取表](https://www.fullcomp.jp/yokohama/kaitori/19596)
 - 確認日: 2026-09-11
-- 保存可否: 不明。ローカルartifactとfixtureは作成していない
+- 保存可否: 公開条件上は不明。MVPでは本人のGit管理外領域だけに保存し、共有しない
 - 必須項目の取得可否: TCG、店舗、カード名、カード番号、set code、レアリティ、価格種別、金額、通貨、基準日を取得可能。カード単位IDと公開時刻は取得不可
-- 同じカードを他店舗と照合できるか: `ゾロア + 020/019 + MEZ`は同じ基準日に池袋店と横浜店で各1候補、いずれも1,000円だった。一方、`200/SV-P + P`は通常品と未開封品の2候補になり、名称中の封入状態まで必要になる
+- 同じカードを他店舗と照合できるか: `メガレックウザex + M6 + 110/076 + SAR`は池袋店、晴れる屋2、遊々亭で各1候補になった。2026-09-11確認時は池袋店35,000円、晴れる屋2 25,000円、遊々亭32,000円だったが、状態と価格保証の等価性は確認できないため別条件の観測として扱う。`200/SV-P + P`のように通常品と未開封品が同じ番号になる場合は、名称中の封入状態まで必要になる
+
+### 既存候補との価格条件比較
+
+共通キーを`ポケモンカードゲーム / 拡張パック「ストームエメラルダ」 / M6 / 110/076 / SAR / メガレックウザex / 日本語`とした。カード名だけで確定せず、セット、カード番号、レアリティをすべて照合した。
+
+| 情報源 | source内候補 | 2026-09-11の掲載買取価格 | 原本にある価格条件 | 比較判断 |
+| --- | --- | ---: | --- | --- |
+| フルコンプ池袋店 | 記事`18872`内の1行 | 35,000円 | 池袋店の店頭、完品・美品の満額査定参考価格。基準日は2026-09-10。在庫、状態、相場で変更・停止あり | 印刷仕様は照合可能。店舗と査定条件を保持する |
+| 晴れる屋2 | `id=54583`の1件 | 25,000円 | JSONの`buy_price`。状態、言語、公開日時、有効期限なし | 印刷仕様は照合可能。欠損条件を保持する |
+| 遊々亭 | `m06/10110`の1件 | 32,000円 | 日本語版の現行表示価格。旧価格14,000円は打消し表示。カード共通の状態減額規則あり | 印刷仕様は照合可能。状態条件をフルコンプと同一視しない |
+
+3件は同じ印刷仕様の価格差を比較できるが、同条件価格としては統合しない。観測ごとに店舗またはチャネル、価格種別、状態条件、価格保証、取得日時、原本URLを保持する。
 - 欠損可能な値: カード単位ID、独立した番号・set code、公式セット名、言語、版、状態ランク、公開時刻、有効期限。TCG、host、店舗slug、価格条件、通貨、取得日時、parser versionはsource metadataまたは取込設定から補う
 - 想定されるparser変更リスク: 中〜高。無名配列の列順、名称中の番号とset code、CMSとDataTablesのtemplateに依存する
 
 ## 取得設計案
 
-- fetch方法: 書面許諾後、対象運営会社・host・店舗を限定し、店舗の更新索引から変更された価格表だけを取得する
+- fetch方法: 対象運営会社・host・店舗を池袋店に限定し、日次1回以下で更新索引を確認して変更された価格表だけを逐次取得する
 - 差分取得方法: 記事ID、表示基準日、content hash、店舗slug、正規化した行hashを比較する
-- timeout・再試行: 許諾条件に従い逐次実行する。429または5xxでは停止し、即時再試行しない
+- timeout・再試行: 逐次実行し、403、429、challengeでは再試行せず停止する。5xxも即時再試行しない
 - 0件の意味: HTTP成功、`tableData`の存在、更新日、列数を検査し、空配列だけを正常な0件候補とする
 - 構造変更の検知: 列数、価格型、カード番号解析率、件数、更新日の後退を店舗・記事種別ごとに検査する
 - 重複防止に使える値: `source slug + shop slug + article ID + displayed date + normalized row hash + artifact`を候補とする
@@ -80,7 +102,7 @@ robots.txtで対象pathが禁止されていないことと利用条件が公開
 
 ## 判断
 
-- 推奨状態: MVP選定
-- 理由: 池袋店と`www.fullcomp.jp`へ範囲を限定すれば許諾主体と対象URLを明示して照会でき、店舗別の基準日付き価格を既存2候補へ追加できる。カード単位ID欠損とparser変更リスクを受け入れ、自動取得、保存、fixture利用は許諾まで開始しない
-- 再検討条件: `CP-0070`で株式会社イントゥから取得頻度、raw artifact、抽出履歴、fixture、第三者提供の書面回答を得て、許諾済みfixtureで名称解析と記事間schemaを検証する
-- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)
+- 推奨状態: MVP採用
+- 理由: 池袋店の基準日付き価格を既存2情報源と照合でき、店舗別HTMLとして3番目のadapterと価格条件差を検証できる。個人・非公開のローカル利用に限定し、許諾済みとは扱わない
+- 停止条件: 403、429、challenge、認証要求、明示的な自動取得拒否、価格表schemaの破壊を検出した場合
+- 関連ADR: [ADR-0012](../adr/0012-private-personal-operation.md)

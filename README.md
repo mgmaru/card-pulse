@@ -1,6 +1,6 @@
 # Card Pulse
 
-Card Pulse は、複数の情報源からTCGカードの価格観測値を継続的に保存し、仕入れ候補と売却先を評価するための相場情報を提供するデータ基盤です。
+Card Pulse は、複数の情報源からTCGカードの価格観測値を継続的に保存し、仕入れ候補と売却先を評価するための個人用データ基盤です。プロジェクトオーナー本人だけが使い、アプリ、API、取得データを一般公開しません。
 
 現在は構想・設計段階です。最初に証明するのは完全自動収集の実現性ではなく、次の3点です。
 
@@ -27,7 +27,7 @@ flowchart LR
     D --> U[仕入れ候補・売却先候補]
 ```
 
-Card DiggerはCard Pulseの内部DBを直接参照せず、HTTPS APIを利用します。API、Collection Worker、DBは別サービスとして扱います。APIの具体的な識別子、認証、versioning、鮮度、欠損、曖昧一致の契約は実装前に定義します。
+Card DiggerはCard Pulseの内部DBを直接参照せず、本人の端末またはprivate network内のAPIを利用します。API、Collection Worker、DBは別サービスとして扱いますが、いずれもInternetへ公開しません。APIの具体的な識別子、認証、versioning、鮮度、欠損、曖昧一致の契約は実装前に定義します。
 
 ## MVP
 
@@ -36,15 +36,15 @@ MVPは小さな縦方向の処理を完成させ、2〜4週間の試験収集で
 | 項目 | 対象 |
 | --- | --- |
 | TCG | ポケモンカードゲーム |
-| 店舗 | 晴れる屋2、遊々亭、フルコンプ池袋店の3候補。書面条件を満たした2〜3店舗で取得を開始 |
+| 情報源 | 晴れる屋2、遊々亭、フルコンプ池袋店。本人のローカル環境から低頻度で取得 |
 | 補助入力 | CSVまたはJSONによる手動取込1系統 |
 | 優先する価格 | 買取価格 |
 | 永続化 | 比較検証後に選定するサーバー型DB。原本storageはDBと分離 |
-| 提供 | 最新価格、中央値、最高値、店舗数、鮮度、価格履歴を返すAPI |
-| 実行 | APIとCollection Workerを別サービスとして実行 |
+| 提供 | 最新価格、中央値、最高値、店舗数、鮮度、価格履歴を返す非公開API |
+| 実行 | APIとCollection Workerを別サービスとして本人の端末またはprivate network内で実行 |
 | ローカル開発 | Docker Composeでサービス構成を再現 |
 
-Xの全自動監視、画像によるカード同定、全TCG・全店舗対応、リアルタイム更新、高可用性・自動拡張を備えた本番運用、Card Digger UIはMVPに含めません。詳しい範囲と完了条件は [MVP定義](docs/product/mvp.md) を参照してください。
+Xの全自動監視、画像によるカード同定、全TCG・全店舗対応、リアルタイム更新、高可用性・自動拡張を備えた本番運用、一般公開、第三者提供、Card Digger UIはMVPに含めません。詳しい範囲と完了条件は [MVP定義](docs/product/mvp.md) を参照してください。
 
 ## 設計原則
 
@@ -57,6 +57,7 @@ Xの全自動監視、画像によるカード同定、全TCG・全店舗対応�
 - カード同定が曖昧なデータは確定値に混ぜず、レビュー待ちにする。
 - 取得失敗、正常な0件、古いデータ、価格0円を区別する。
 - 一つの情報源が停止しても、保存済みデータの照会と他の情報源の取得を継続できるようにする。
+- source由来の原本、fixture、抽出値、価格履歴を本人の管理領域だけに保存し、Gitや公開CIへ含めない。
 
 ## データの流れ
 
@@ -139,7 +140,7 @@ card-pulse/
 │   │   ├── persistence/        # 選定したDBの永続化実装
 │   │   └── artifacts/          # 取得原本の保存実装
 │   └── entrypoints/
-│       ├── api/                 # Card Digger等から利用するHTTPS API
+│       ├── api/                 # 本人のCard Digger等から利用する非公開API
 │       ├── worker/              # 収集・解析job
 │       └── cli/                 # 開発・運用コマンド
 ├── migrations/                 # DBスキーマ変更
@@ -148,11 +149,11 @@ card-pulse/
 │   ├── unit/
 │   ├── integration/
 │   ├── contract/
-│   └── fixtures/sources/       # 許可された固定サンプル
+│   └── fixtures/sources/       # CIで使うsource非由来の合成サンプル
 ├── scripts/                    # セットアップ・保守用スクリプト
 └── var/                        # 原本、DB、ログ、レビュー対象。Git管理外
 ```
 
 ローカル開発にはDocker Composeを使い、API、Worker、DB、artifact storageの接続関係と依存versionを一つの手順で再現します。Dockerが再現できる範囲と限界は [Dockerによる環境再現](docs/learning/docker-environment-reproduction.md) を参照してください。
 
-ソースコード、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 0に従って選定情報源の書面許諾を確認し、並行してPhase 1でDB選定とローカル開発環境を整えることです。
+ソースコード、Docker環境、DBマイグレーションはまだありません。取得経路は`CP-0074`で確定したため、次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1でPython基盤、DB選定、ローカル開発環境を整えることです。

@@ -1,7 +1,8 @@
 # ADR-0005: API、Collection Worker、DBを別serviceとして扱う
 
-- 状態: Accepted
+- 状態: Superseded
 - 日付: 2026-09-06
+- 置換されたADR: [ADR-0012](0012-private-personal-operation.md)
 
 ## Context
 

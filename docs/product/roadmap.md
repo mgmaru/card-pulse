@@ -2,9 +2,9 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-11
+> 最終更新: 2026-09-12
 >
-> Next task ID: `CP-0073`
+> Next task ID: `CP-0075`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -24,15 +24,25 @@
 - [x] `CP-0005` `done` — `1 TCG × 2〜3店舗` を選び、選定理由と見送った候補をADRに残す。
   - Depends on: `CP-0004`
   - Evidence: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)でポケモンカードゲーム、晴れる屋2、遊々亭、フルコンプ池袋店をMVP候補とし、[ADR-0009](../adr/0009-pokemon-mvp-sources.md)を置換した。
-- [ ] `CP-0070` `planned` — 晴れる屋2、遊々亭、フルコンプ池袋店の書面条件と比較可能性を検証する。
+- [x] `CP-0070` `cancelled` — 晴れる屋2、遊々亭、フルコンプ池袋店の書面条件と比較可能性を検証する。
   - Depends on: `CP-0005`
   - Done when: 3候補の対象URL、User-Agent、取得頻度、raw artifactと抽出履歴の保持、sanitized fixture、Card Diggerへの派生集計提供、停止・削除条件について、書面回答または回答期限までの経緯がsource文書に記録され、フルコンプ池袋店の代表カードを既存候補と照合して価格条件を比較している。
-- [ ] `CP-0071` `planned` — `CP-0070`の結果後、追加情報源が必要な場合にドラゴンスターの取得安定性と許諾主体を検証し、候補へ加えるか判断する。
-  - Depends on: `CP-0070`
+  - Cancellation reason: [ADR-0011](../adr/0011-no-external-source-inquiries.md)で外部照会を行わない方針へ変更した。公開条件の再確認とフルコンプ池袋店の情報源横断比較はsource文書へ残した。
+- [x] `CP-0071` `done` — 3候補の公開条件では採用できない結果を受け、ドラゴンスターの取得安定性と許諾主体を検証し、候補へ加えるか判断する。
   - Done when: robots.txtとCloudflareの挙動、一覧・詳細取得の安定性、価格データの許諾主体、書面確認の窓口、既存候補との同定可能性を確認し、採用、保留、見送りの判断と根拠をsource文書および必要なADRへ記録している。
-- [ ] `CP-0072` `planned` — `CP-0070`と、必要な場合は`CP-0071`の結果から、MVP採用する2〜3店舗を確定する。
+  - Evidence: [ドラゴンスターの検証](../sources/dragonstar.md#cp-0071の検証)で両hostのrobots.txt、一覧、詳細がCloudflare challengeになること、許諾主体が確定しないこと、既存候補と属性照合できることを記録し、[ADR-0011](../adr/0011-no-external-source-inquiries.md)でMVP候補として見送った。
+- [x] `CP-0072` `cancelled` — `CP-0070`と、必要な場合は`CP-0071`の結果から、MVP採用する2〜3店舗を確定する。
   - Depends on: `CP-0070`
   - Done when: 自動取得、保存、fixture、派生集計提供の必要条件を満たす2〜3店舗がMVP採用としてsource文書に記録され、候補構成を変更する場合は新しいADRで決定している。
+  - Cancellation reason: 外部照会を行わず、当時の公開条件だけでは必要条件を満たさないため、このタスクの基準では採用しなかった。`CP-0074`で個人・非公開の取得経路へ変更した。
+- [x] `CP-0073` `cancelled` — 外部照会を行わずにMVPを検証できる取得経路を決定する。
+  - Depends on: `CP-0071`
+  - Done when: 必要な利用条件が公開されている情報源と、利用者が権利を持つ手動ファイルまたはsource非由来の合成データを比較し、採用する入力経路、検証できるMVP仮説、原本・fixtureの保存規則をMVP定義とADRへ記録している。
+  - Cancellation reason: 公開条件による個別許諾の確認を開発の前提にせず、本人だけが使う非公開Web Collectorへ進む方針に変更した。置換タスクは`CP-0074`。
+- [x] `CP-0074` `done` — Card Pulseを個人用の非公開アプリとし、ローカルWeb Collectorの取得経路を確定する。
+  - Depends on: `CP-0071`
+  - Done when: 単一利用者、非公開runtime、採用情報源と実装順、取得上限、アクセス拒否時の停止、raw artifactとfixtureの保存・非共有境界をMVP定義とADRへ記録している。
+  - Evidence: [ADR-0012](../adr/0012-private-personal-operation.md)で個人・非公開のローカル運用、晴れる屋2・遊々亭・フルコンプ池袋店の実装順、取得上限、停止条件、raw artifactとfixtureの保存境界を決定し、[MVP定義](mvp.md)の仮説と完了条件へ反映した。
 - [x] `CP-0064` `done` — 次のADR作成時にADR管理の機械検査を導入するか判断する。
   - Done when: ADR ID、状態、日付、必須section、一覧、置換関係を検査するvalidatorを既存の`write-project-docs`とCIへ統合するか、見送る理由を記録する。
   - Evidence: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)に、現時点で専用validatorを導入しない理由と再検討条件を記録した。
@@ -94,19 +104,19 @@
 
 完了条件: 固定JSON/CSVサンプルを投入し、欠損した抽出結果を確定観測と分離しながら、追跡可能で重複のない観測値を再現できる。
 
-## Phase 3 — Web Collectorを縦に通す
+## Phase 3 — ローカルWeb Collectorを縦に通す
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
-  - Depends on: `CP-0072`
-- [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行をsource設定として定義する。
-- [ ] `CP-0026` `planned` — 保存が許される固定fixtureを用意し、ネットワークなしでparserをテストする。
-  - Depends on: `CP-0072`
+  - Depends on: `CP-0074`
+- [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
+- [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
+  - Depends on: `CP-0074`
 - [ ] `CP-0027` `planned` — 0件、必須項目欠損、件数急減を正常終了にしない検知を作る。
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
-  - Depends on: `CP-0072`
+  - Depends on: `CP-0074`
 - [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
   - Depends on: `CP-0017`, `CP-0026`
-  - Done when: 保存と再利用が許可されたfixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。
+  - Done when: source非由来の合成fixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。source由来fixtureはCIとGitへ含めない。
 
 完了条件: 2〜3店舗のデータが同じ観測モデルに入り、一つの失敗が他へ波及しない。
 
@@ -130,7 +140,7 @@
 - [ ] `CP-0039` `planned` — 成功率、重複率、未同定率、レビュー時間、parser変更を記録する。
 - [ ] `CP-0040` `planned` — 仕入れまたは売却判断に役立った事例を [Experiments](../experiments/README.md) に記録する。
 - [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されないことを確認する。
-- [ ] `CP-0042` `planned` — API、Worker、DBを別serviceとして試験環境へ配置し、DBとartifact storageを外部公開しない。
+- [ ] `CP-0042` `planned` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序をRunbookにする。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
 - [ ] `CP-0045` `planned` — 継続、対象変更、中止の判断をADRに残す。
@@ -170,4 +180,4 @@ X限定情報の利益が取得・保守コストを上回る場合だけ進む�
 - [ ] `CP-0057` `planned` — Phase 4で作成したAPI contractをCard Diggerの実利用に合わせて拡張する。
 - [ ] `CP-0058` `planned` — 中央値、店舗数、鮮度、ばらつき、根拠観測をCard Diggerが正しく評価できることを確認する。
 
-完了条件: Card Diggerが内部DBへ依存せず、根拠付き価格情報を取得できる。
+完了条件: 本人が管理するCard Diggerが内部DBへ依存せず、非公開APIから根拠付き価格情報を取得できる。

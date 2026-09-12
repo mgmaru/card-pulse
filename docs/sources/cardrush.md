@@ -54,7 +54,7 @@
 | 推奨取得間隔 | 設定不可。提携なしの自動取得は頻度によらず禁止。提携時に個別合意が必要 | 2026-09-09 | [データ利用方針](https://cardrush.media/data_policy) |
 | 認証・Cookie | 買取表の表示は未認証で可能。自動取得の例外にはならない | 2026-09-09 | [買取表](https://cardrush.media/pokemon/buying_prices)、[データ利用方針](https://cardrush.media/data_policy) |
 
-データ利用方針は株式会社RUSHが運営する全Webサイトを対象とし、通販ドメインも対象サイトとして列挙している。robots.txtの許可状態よりデータ利用方針を優先し、正式提携なしでは自動取得、raw artifact保存、fixture作成を行わない。価格情報の連携は[問い合わせフォーム](https://cardrush.media/contact?subject=%E4%BE%A1%E6%A0%BC%E6%83%85%E5%A0%B1%E7%AD%89%E3%81%AE%E9%80%A3%E6%90%BA%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)から相談するよう案内されている。
+データ利用方針は株式会社RUSHが運営する全Webサイトを対象とし、通販ドメインも対象サイトとして列挙している。robots.txtの許可状態よりデータ利用方針を優先し、正式提携なしでは自動取得、raw artifact保存、fixture作成を行わない。価格情報の連携窓口は公開されているが、[ADR-0012](../adr/0012-private-personal-operation.md)により外部照会は行わない。
 
 ## 代表サンプル
 
@@ -80,5 +80,5 @@
 
 - 推奨状態: 見送り
 - 理由: 技術的には必要項目を取得しやすいが、正式提携なしの自動取得が明示的に禁止されている
-- 再検討条件: 正式提携により、取得方式、用途、保存期間、raw artifact、fixture、rate limit、表示・再利用条件を文書で合意する
-- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)
+- 再検討条件: MVPの3情報源だけでは比較仮説を検証できず、正式な公開APIまたは明示的な自動取得許可が提供された場合
+- 関連ADR: [ADR-0012](../adr/0012-private-personal-operation.md)

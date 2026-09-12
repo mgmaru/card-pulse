@@ -24,7 +24,9 @@ Python上の正確なprotocolと型定義は実装時のコードを正とする
 
 ## Source adapterの責務
 
-- 情報源へ許可された方法と頻度でアクセスする。
+- source設定で定めた低頻度・逐次の方法でアクセスし、認証やアクセス制御を回避しない。
+- 403、429、CAPTCHA、challengeを受けた場合は自動再試行せず、そのsourceの取得を停止する。
+- 未認証の通常requestで発行されたCookieは取込実行内だけの一時的なcookie jarで扱い、実行終了時に破棄する。ブラウザprofile、認証済みsession、他者から受け取ったCookie、challenge通過用tokenを読み込まない。
 - timeout、再試行上限、backoff、User-Agentをsource設定に従って扱う。
 - source内ID、URL、MIME type、取得日時、利用可能なら公開日時を原本候補へ付与する。
 - 保存済み原本を、ネットワークアクセスなしで解析する。

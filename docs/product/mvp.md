@@ -2,7 +2,7 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-11
+> 最終更新: 2026-09-12
 
 ## 検証する仮説
 
@@ -15,17 +15,17 @@ MVPでは、次の仮説を検証する。
 
 ## 対象範囲
 
-対象TCGとMVPの情報源候補は[ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)で決定した。自動取得、保存、fixture、派生集計提供の書面許諾を得るまで、選定候補へのCollection Workerによる取得は開始しない。
+対象TCGはポケモンカードゲームとする。[ADR-0012](../adr/0012-private-personal-operation.md)により、Card Pulseはプロジェクトオーナー本人だけが使う非公開アプリとして運用する。情報源の運営者への照会と公開条件による個別許諾の確認を開発の前提にせず、本人のローカル環境から晴れる屋2、遊々亭、フルコンプ池袋店を低頻度で取得する。
 
 | 項目 | MVPの範囲 |
 | --- | --- |
 | TCG | ポケモンカードゲーム |
-| 店舗 | 晴れる屋2、遊々亭、フルコンプ池袋店の3候補。書面条件を満たした2〜3店舗で取得を開始 |
+| 情報源 | 晴れる屋2、遊々亭、フルコンプ池袋店。晴れる屋2から縦に実装し、残り2情報源を追加する |
 | 補助入力 | CSVまたはJSONによる手動取込1系統 |
 | 価格 | 買取価格を優先 |
-| 保存 | 比較検証後に選定するサーバー型DB。原本本体は別storageに保存 |
-| 照会 | 最新価格、中央値、最高値、最低値、店舗数、鮮度、スプレッド、履歴を返すAPI |
-| 実行 | APIとCollection Workerを別サービスとして実行 |
+| 保存 | 比較検証後に選定するサーバー型DB。原本本体は本人が管理する別storageに保存 |
+| 照会 | 最新価格、中央値、最高値、最低値、店舗数、鮮度、スプレッド、履歴を返す非公開API |
+| 実行 | APIとCollection Workerを別サービスとして本人の端末またはprivate network内で実行 |
 | ローカル開発 | Docker ComposeでAPI、Worker、DB、artifact storageを再現 |
 | 試験期間 | 2〜4週間 |
 
@@ -40,12 +40,14 @@ MVPでは、次の仮説を検証する。
 - Card DiggerのUIまたは商品探索機能
 - 正式な掘り出し物スコア
 - 商用提供または第三者へのデータ提供
+- アプリ、repository、API、取得原本、source由来fixture、抽出値、価格履歴の一般公開
+- Internetから到達可能なAPI、DB、artifact storageの配置
 
 画像OCRとX取得は、構造化Webデータの価値を確認した後に個別の検証として判断する。
 
 ## 完了条件
 
-- 2〜3店舗から同じ操作で繰り返しデータを取り込める。
+- 晴れる屋2、遊々亭、フルコンプ池袋店から、sourceごとの取得上限を守って繰り返しデータを取り込める。
 - Collectorごとの差を共通の候補形式へ変換できる。
 - 原本から処理実行、抽出結果、観測候補、同定判断、確定観測またはreviewまで追跡できる。
 - 必須項目を欠く抽出結果を再処理可能な形で残し、確定した価格観測と区別できる。
@@ -55,10 +57,13 @@ MVPでは、次の仮説を検証する。
 - カード同定が曖昧な候補をレビュー待ちとして隔離できる。
 - カード名だけの一致で自動確定しない。
 - 任意のカードについて、集計値、鮮度、個別観測値、履歴をCLIまたはJSONで確認できる。
-- Card Digger等のクライアントがDBへ直接接続せず、最小APIから相場情報を取得できる。
+- 本人が管理するCard Digger等のクライアントがDBへ直接接続せず、非公開の最小APIから相場情報を取得できる。
 - API、Collection Worker、DBを別サービスとして起動できる。
+- API、DB、artifact storageがInternetから到達できず、APIが既定でloopbackまたはCompose内部networkだけにbindする。
+- source由来のraw artifact、fixture、抽出値、価格履歴をGitとCI artifactへ含めない。
+- source非由来の合成fixtureだけでCIのCollector contract testが通り、Git管理外のsource由来fixtureでローカルparser regression testを実行できる。
 - 一つのCollectorが停止しても、保存済みデータの照会と他のCollectorは動作する。
-- domain unit test、保存のintegration test、Collector contract test、固定fixtureによるparser regression testが通る。
+- domain unit testと保存のintegration testが通る。
 - バックアップから空環境へ復元できる。
 - 試験収集後、データの有用性、取得成功率、未同定率、レビュー時間、保守時間を記録し、継続・変更・中止を判断できる。
 
@@ -73,10 +78,10 @@ MVPでは、次の仮説を検証する。
 - 抽出confidenceとカード同定のmatch scoreを区別する。
 - 外れ値を削除せず、集計値と個別観測値の両方を参照可能にする。
 - 自動同定の誤結合を、未同定より重大な障害として扱う。
+- 403、429、CAPTCHA、Cloudflare challengeを取得失敗として記録し、回避や自動再試行を行わない。
 
 ## MVP中に決める事項
 
-- 選定した3候補の取得許諾と取得間隔、およびMVP採用する2〜3店舗
 - カードを一意に扱うために必要な識別項目
 - 鮮度を判定する期間
 - 同一原本・同一観測の重複防止キー

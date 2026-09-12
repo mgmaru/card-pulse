@@ -20,12 +20,14 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | [0002](0002-append-only-provenance.md) | Accepted | 原本と価格観測を追記型で保存し、出典を追跡する |
 | [0003](0003-mvp-local-storage.md) | Superseded | MVPはSQLiteとローカルファイルシステムを使う |
 | [0004](0004-server-database-selection.md) | Accepted | 構造化データをサーバー側DBに置き、製品は比較検証後に選定する |
-| [0005](0005-separate-runtime-services.md) | Accepted | API、Collection Worker、DBを別serviceとして扱う |
+| [0005](0005-separate-runtime-services.md) | Superseded | API、Collection Worker、DBを別serviceとして扱う |
 | [0006](0006-docker-compose-local-development.md) | Accepted | Docker Composeでローカルのservice topologyを再現する |
 | [0007](0007-layered-ingestion-data.md) | Accepted | 情報源横断の構造化データを一つの論理DBで管理し、処理段階で分離する |
 | [0008](0008-opaque-card-identity-id.md) | Accepted | カード同定には意味を持たない内部UUIDを使い、属性と外部IDを分離する |
 | [0009](0009-pokemon-mvp-sources.md) | Superseded | ポケモンカードのMVP情報源に晴れる屋2と遊々亭を選ぶ |
-| [0010](0010-pokemon-mvp-source-candidates.md) | Accepted | ポケモンカードのMVP情報源候補に晴れる屋2、遊々亭、フルコンプ池袋店を選ぶ |
+| [0010](0010-pokemon-mvp-source-candidates.md) | Superseded | ポケモンカードのMVP情報源候補に晴れる屋2、遊々亭、フルコンプ池袋店を選ぶ |
+| [0011](0011-no-external-source-inquiries.md) | Superseded | MVP情報源を公開条件だけで判断し外部照会を行わない |
+| [0012](0012-private-personal-operation.md) | Accepted | Card Pulseを個人用の非公開アプリとして運用する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 

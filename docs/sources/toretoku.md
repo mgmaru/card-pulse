@@ -49,18 +49,18 @@
 | robots.txt | 一般UAに`Allow: /`と`Crawl-Delay: 30`。一部botを全面禁止し、AI学習不可等のcontent signalを記載 | 2026-09-09 | [robots.txt](https://www.toretoku.jp/robots.txt) |
 | 利用規約 | コンテンツの無断複製、転載、改変、二次利用と、本サービスで得た情報の商業利用を禁止 | 2026-09-09 | [トレトク利用規約 第11条・第12条](https://www.toretoku.jp/agreement) |
 | 自動アクセス | スクレイピングを名指しする規定は未確認。システム・ネットワークの妨害と基準を超える負荷を禁止する | 2026-09-09 | [トレトク利用規約 第12条・第14条](https://www.toretoku.jp/agreement) |
-| 取得データの保存 | raw HTMLと抽出値の内部保存は明示されない。商業目的の保存・分析は規約上の禁止に該当し得るため、書面承諾なしに行わない | 2026-09-09 | [トレトク利用規約 第11条・第12条](https://www.toretoku.jp/agreement) |
-| fixtureの保存・共有 | HTML断片やページ由来データの無断二次利用に該当し得る。非公開・公開とも書面承諾なしに保存・共有しない | 2026-09-09 | [トレトク利用規約 第11条](https://www.toretoku.jp/agreement) |
-| 推奨取得間隔 | robots.txt上は一般UAで30秒以上。これは利用許諾ではないため、個別許諾を得るまで自動取得しない | 2026-09-09 | [robots.txt](https://www.toretoku.jp/robots.txt)、[トレトク利用規約](https://www.toretoku.jp/agreement) |
+| 取得データの保存 | raw HTMLと抽出値の内部保存は明示されない。商業目的の保存・分析は規約上の禁止に該当し得るため行わない | 2026-09-09 | [トレトク利用規約 第11条・第12条](https://www.toretoku.jp/agreement) |
+| fixtureの保存・共有 | HTML断片やページ由来データの無断二次利用に該当し得るため、非公開・公開とも保存・共有しない | 2026-09-09 | [トレトク利用規約 第11条](https://www.toretoku.jp/agreement) |
+| 推奨取得間隔 | robots.txt上は一般UAで30秒以上だが、これは利用許諾ではないため自動取得しない | 2026-09-09 | [robots.txt](https://www.toretoku.jp/robots.txt)、[トレトク利用規約](https://www.toretoku.jp/agreement) |
 | 認証・Cookie | 公開価格の閲覧に認証は不要。規約はCookie利用と、拒否時に一部機能が制限され得ることを明記 | 2026-09-09 | [トレトク利用規約 第18条](https://www.toretoku.jp/agreement) |
 
-robots.txtのクロール条件は、履歴保存、再解析、API提供、fixture利用の権利を与えない。Card Pulseの将来の利用形態が規約上の商業利用に該当する可能性もあるため、公開価格の自動取得、raw artifact、正規化価格の履歴、fixture、Card Diggerへの提供について株式会社山徳の書面承諾を得るまでCollection Workerによる取得を開始しない。
+robots.txtのクロール条件は、履歴保存、再解析、API提供、fixture利用の権利を与えない。Card Pulseの将来の利用形態が規約上の商業利用に該当する可能性もあるため、公開価格の自動取得、raw artifact、正規化価格の履歴、fixture、Card Diggerへの提供を行わない。
 
 ## 代表サンプル
 
 - 確認したURLまたはローカルartifact ID: [ミモザ SAR](https://www.toretoku.jp/kaitori/pokemon/item-detail/256433jat)
 - 確認日: 2026-09-09
-- 保存可否: 書面承諾なしでは保存しない。ローカルartifactとfixtureは作成していない
+- 保存可否: 公開条件で許可を確認できないため保存しない。ローカルartifactとfixtureは作成していない
 - 必須項目の取得可否: TCG、カード名、カード番号、セット、レアリティ、言語、価格種別、金額、通貨、source内IDを取得可能。公開日時は取得不可
 - 同じカードを他店舗と照合できるか: 同じセットの`ミモザ`はSARとSRの2候補だったが、`SV1V + 105/078 + SAR + 日本語`では1候補になり、ランクAの指定買取価格は3,600円だった。強い識別項目が他店にも揃う場合に比較候補となる
 - 欠損可能な値: まとめ買取対象の数値価格、公開日時、個別更新日時、有効期限、非A状態の価格。TCG、価格状態、通貨、取得日時、原本URL、parser versionはsource metadataまたは取込設定から補う
@@ -68,9 +68,9 @@ robots.txtのクロール条件は、履歴保存、再解析、API提供、fixt
 
 ## 取得設計案
 
-- fetch方法: 書面許諾後、カテゴリまたは検索一覧を30秒以上の間隔で取得し、変更または必要項目の欠損がある商品だけ詳細を取得する
+- fetch方法: 現在は実施しない。将来公開条件を満たして再選定する場合は、カテゴリまたは検索一覧を30秒以上の間隔で取得し、変更または必要項目の欠損がある商品だけ詳細を取得する
 - 差分取得方法: content hash、取得日時、商品コード、価格またはまとめ買取状態を比較する
-- timeout・再試行: 逐次実行し、robots.txtと許諾条件に従う。429または5xxで停止し、即時再試行しない
+- timeout・再試行: 再選定時も逐次実行し、robots.txtと公開条件に従う。429または5xxで停止し、即時再試行しない
 - 0件の意味: 検索成功、一覧container、paginationを検査し、空の結果だけを正常な0件候補とする。「まとめ買取対象」はデータなしや0円に変換しない
 - 構造変更の検知: 商品コード、型番、言語、レアリティ、価格状態の欠損率と件数急変を検査する
 - 重複防止に使える値: `source slug + item code + price state + amount + artifact`を候補とする
@@ -80,5 +80,5 @@ robots.txtのクロール条件は、履歴保存、再解析、API提供、fixt
 
 - 推奨状態: 見送り
 - 理由: カード同定項目は最も充実しているが、商業利用とコンテンツ二次利用の制限がCard Pulseの保存・再提供に抵触し得る
-- 再検討条件: 自動取得、raw artifact、抽出値の長期履歴、非公開・公開fixture、Card Diggerへの提供について書面承諾を得る
-- 関連ADR: [ADR-0010](../adr/0010-pokemon-mvp-source-candidates.md)
+- 再検討条件: MVPの3情報源だけでは比較仮説を検証できず、明示的な自動取得許可または公開APIが提供された場合
+- 関連ADR: [ADR-0012](../adr/0012-private-personal-operation.md)
