@@ -80,9 +80,10 @@
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
-- [ ] `CP-0065` `planned` — ブランチ・PR運用を定義し、作業開始Skillと`main`の保護設定を整える。
+- [x] `CP-0065` `done` — ブランチ・PR運用を定義し、作業開始Skillと`main`の保護設定を整える。
   - Depends on: `CP-0059`
   - Done when: [CONTRIBUTING.md](../../CONTRIBUTING.md)をsource of truthとしてSkillが作業ブランチを作成でき、`main`へのマージにpull requestとCI成功が必要になり、ブランチ名CIの導入判断が記録されている。
+  - Evidence: [ブランチとpull request](../../CONTRIBUTING.md#ブランチとpull-request)へ、`cp-<タスクID>-<要約>`の命名、マージコミットのみ許可する理由、rebase後にマージする規則、マージ後もブランチを残す判断、保護設定の一覧、ブランチ名の機械検査を見送る理由と再検討条件を記録した。[`start-task`](../../.agents/skills/start-task/SKILL.md) Skillが分岐からpull request、マージまでの手順を実行する。`main`のrulesetでpull requestとCI成功を必須にし、squash mergeとrebase mergeを無効化した。必須status checkは現存する`Documentation`と`Agent configuration`から開始し、`CP-0060`と`CP-0061`で追加する。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
