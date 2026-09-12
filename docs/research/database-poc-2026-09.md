@@ -15,9 +15,9 @@ PostgreSQL 18.6とMariaDB 12.3.3の両方が、[DB要件のPoC合格条件](../a
 | 候補 | PoC合格条件 | 測定で確認した弱点 | CP-0010への申し送り |
 | --- | --- | --- | --- |
 | PostgreSQL 18.6 | 10項目すべて充足 | 書込みの最大値が外れる（10倍で29.6秒）。checkpointとautovacuumの調整が要る | 実データでの書込みtail調整を前提に採用可否を判断する |
-| MariaDB 12.3.3 | 10項目すべて充足 | 追記専用roleが外部key検査を自分で無効化できる。DDLがtransactionでないため、失敗したmigrationもdowngradeも部分適用のまま残る。10倍の論理復元がPostgreSQLの約5倍 | 上記3点を運用手順とapplication側で埋める費用を評価する |
+| MariaDB 12.3.3 | 10項目すべて充足 | applicationが外部key検査を止める実装を書いた場合、追記専用roleでも実行できてしまう。DDLがtransactionでないため、失敗したmigrationもdowngradeも部分適用のまま残る。10倍の論理復元がPostgreSQLの約5倍 | 上記3点を運用手順とapplication側で埋める費用を評価する |
 
-MariaDBの外部key検査の無効化は、[CP-0008の共通検証事項](database-candidate-comparison-2026-09.md#cp-0009の共通検証事項)4が求める「runtime roleがconstraint検査を無効化できないこと、または防止策」を満たさない。DB側に防止手段がなく、applicationとreview、または定期検査で補う必要がある。[ADR-0002](../adr/0002-append-only-provenance.md)の追記型保存をDB権限で強制する設計方針との適合度は、この点でPostgreSQLが上回る。
+MariaDBの外部key検査は、[CP-0008の共通検証事項](database-candidate-comparison-2026-09.md#cp-0009の共通検証事項)4が求める「runtime roleがconstraint検査を無効化できないこと、または防止策」を満たさない。どちらのDBも既定では検査しており、MariaDBが自動で無効化するわけではないが、applicationが無効化するSQLを発行した場合にDB側で止める手段がない。実装規約とreview、または定期検査で補う必要がある。[ADR-0002](../adr/0002-append-only-provenance.md)の追記型保存をDB権限で強制する設計方針との適合度は、この点でPostgreSQLが上回る。
 
 この文書はDB製品の採用決定ではない。製品とhosting方式は`CP-0010`のADRで決定し、[ADR-0004](../adr/0004-server-database-selection.md)の未決事項を解消する。
 
@@ -293,13 +293,39 @@ rollbackとbackup復元の境界も候補で異なる。PostgreSQLでは同じ�
 
 復元時間には大きな差がある。PostgreSQLのcustom形式は`pg_restore --jobs`で並列に復元でき、MariaDBの論理dumpはSQL文の逐次replayになる。10倍プロファイルでもどちらも`DB-REC-02`の「空環境へのrestoreと整合検証は2時間以内」を満たしたが、余裕は大きく異なる。
 
+#### 取得時の一貫性と復元時の検証
+
+backupの取得では差がない。どちらも更新が続くDBから一貫したsnapshotを取れる。PostgreSQLの`pg_dump`は常に1 transactionのsnapshotから読み、MariaDBはPoCで使った`--single-transaction`がInnoDBのsnapshotから読む。取得中の更新によって参照の切れた行が生まれることはない。
+
+差は復元時の検証にある。生成したbackup setを復号して内容を確認した。
+
+- `mariadb-dump`の出力は先頭に`SET FOREIGN_KEY_CHECKS=0`と`SET UNIQUE_CHECKS=0`を含み、末尾で元の値へ戻す。**復元中は外部key検査が働かない。**これはtoolが既定で出力するもので、利用者が書いたものではない。
+- `pg_dump`のcustom形式は検査を止めず、順序で解決する。復元計画はtable、table data、index、foreign key constraintの順で、24個の外部key制約がすべて最後に作られる。**制約を作る時点で既存の全行が検証される**ため、参照の切れた行が含まれていれば復元が失敗する。
+
+したがって、backup元のDBに参照の切れた行があった場合、PostgreSQLは復元の失敗として検出でき、MariaDBは警告なく復元する。
+
+PoCの復元検証（件数、代表1,000行のhash、constraint数、原本fileの存在）は、参照整合そのものをscanしていない。件数もhashも一致するため、この検証では参照の切れた行を検出できない。MariaDBを採用する場合、復元手順へ参照整合の検査を追加する必要がある。PostgreSQLではDBが復元時に検証するため追加不要である。
+
 ### 9. Role分離とnetwork
 
 API、Worker、migration、backup、管理者のroleを分け、14通りの操作で期待どおりに許可・拒否されることを確認した。両候補とも、APIは追記も更新もできず、Workerは追記とreview判断の記録はできるが確定観測の`UPDATE`・`DELETE`とDDLはできない。
 
 DB portは`127.0.0.1`だけを待ち受け、同一LANのIPアドレスからの接続は拒否された。
 
-1点だけ差がある。MariaDBでは`INSERT`権限だけを持つWorker roleが`SET SESSION foreign_key_checks = 0`を実行でき、その状態で存在しないカードを参照する観測を追記できた。PostgreSQLの同等の設定（`session_replication_role`）はsuperuser専用で、Worker roleでは拒否される。MariaDBを採用する場合、外部key検査の無効化を防ぐ方法がなく、applicationとcode reviewで担保するか、検出のための定期検査が必要になる。
+1点だけ差がある。ただし「MariaDBが外部key検査を勝手に外す」という意味ではないため、条件を明確にしておく。
+
+**両候補とも既定で外部key検査を行い、DBが自分でこの設定を書き換えることはない。**検査が止まるのは、applicationが自分のsessionに対して明示的なSQLを発行したときだけで、接続を張り直せば既定へ戻る。したがってこの差は、applicationが検査を外す実装を書いてしまったときに、**DBがそれを拒否できるかどうか**の差である。
+
+| | 検査を止める操作 | Worker roleでの結果 |
+| --- | --- | --- |
+| PostgreSQL | `SET session_replication_role = 'replica'` | 拒否。`permission denied`（SQLSTATE 42501） |
+| MariaDB | `SET SESSION foreign_key_checks = 0` | 成功。`INSERT`権限だけで通る |
+
+PoCではWorker roleでこの操作を実行し、続けて存在しないカードを参照する観測を追記した。MariaDBでは追記に成功し、PostgreSQLは設定変更の時点で拒否されたため追記へ進めなかった。
+
+この構文には正当な用途がある。大量データの一括投入では1行ごとの検査を省く方が速く、PoCの一括投入でも両候補で同等の操作を使った（実行はadmin roleで行い、投入後に検査を戻して参照整合が0件であることを確認している）。正当な用途があるぶん誤用と区別しにくく、runtime roleがこれを実行できるかどうかが運用上の差になる。
+
+MariaDBを採用する場合、DB側に無効化を防ぐ手段がない。実装規約とcode reviewで担保し、参照整合を定期的に検査する運用が必要になる。
 
 ### 補: 監視項目（DB-OPS-02）
 
@@ -352,7 +378,8 @@ self-host構成では月額のservice費用が発生しないため、`DB-COST-0
 | 外部key列のindex | 自動作成しない | 自動作成する | MariaDBはindex容量が増える。不要なindexを消す判断が要る |
 | 外部key制約名 | table名から自動生成 | 連番（`1`、`2`...） | MariaDBではmigrationで制約名を明示しないと運用時に識別しにくい |
 | 冪等な追記 | `ON CONFLICT DO NOTHING`。`INSERT`権限のみ | 相当構文が`UPDATE`権限を要求。`INSERT IGNORE`は全errorを警告化 | 追記専用roleを保つには、重複key errorを成功として扱う実装に統一する |
-| 制約検査の無効化 | superuser専用 | 通常のrole権限で無効化できる | MariaDBでは追記型保存をDB権限だけで守れない |
+| 制約検査の無効化 | superuser専用。runtime roleでは拒否される | `INSERT`権限だけのroleでも実行できる。どちらもDBが自動で外すことはなく、applicationが明示的に発行した場合だけ止まる | applicationが検査を外す実装を書いた場合、MariaDBではDBで止められない |
+| 復元時の参照整合 | 外部key制約を最後に作り全行を検証する | dump先頭で検査を外すため検証されない | 参照の切れた行を含むbackupを、PostgreSQLは復元失敗として検出できる |
 | 失敗の識別 | SQLSTATE（23505、23503、23514、40P01、55P03） | errno（1062、1452、4025、1213、1205） | どちらも機械判別できる。共通の失敗分類はapplication側で対応表を持つ |
 | review競合の敗者 | 条件付き`UPDATE`が0件 | errno 1020 | 再読込みへの分岐条件が候補で変わる |
 | migrationのdowngrade | 後方互換な変更を0.2秒で戻せた | 外部keyを支えるindexを削除できずerrno 1553で失敗。部分適用が残った | MariaDBではdowngradeの事前検証とbackupが前提になる |

@@ -7,5 +7,6 @@
 ## 文書
 
 - [DB選定の判断軸](database-selection.md)
+- [外部keyの強制とDB権限](foreign-key-enforcement.md)
 - [Dockerで再現できる環境と再現できないもの](docker-environment-reproduction.md)
 - [private networkの種類と使い分け](private-network-types.md)
