@@ -40,18 +40,23 @@ skill when a rule changes.
 
    ```bash
    git push -u origin cp-<id>-<summary>
-   gh pr create --fill
+   gh pr create
    ```
 
-4. Wait for CI, then merge with a merge commit:
+   Write the body for a reader, not as a changelog. State what the change decides, then
+   name the judgement calls: where two readings of a document were possible, which option
+   was rejected and why, and which parts you are least confident about. A reviewer who is
+   still building the habit needs to know where to look, not a restatement of the diff.
+
+4. Wait for CI, then report the pull request URL and its check results:
 
    ```bash
    gh pr checks --watch
-   gh pr merge --merge
    ```
 
-   `--merge` is the only permitted method. `--squash` and `--rebase` are disabled on the
-   repository and will fail.
+   Merging is done with `--merge`. `--squash` and `--rebase` are disabled on the
+   repository and will fail. Never pass `--auto`: auto-merge lands the change the moment
+   CI turns green, which removes the opportunity to read it.
 
 5. Leave the branch in place. Do not pass `--delete-branch`, and do not offer to clean it
    up afterwards.
@@ -73,8 +78,8 @@ branch.
 
 ## Boundaries
 
-- Merging is the user's decision. Open the pull request and report its URL and CI status;
-  ask before merging unless the user has already said to merge.
+- Merging is the user's decision, including for documentation-only changes. Open the pull
+  request, report its URL and CI status, and stop. Merge only when the user says to.
 - Never push to `main` directly, and never bypass the ruleset, even when the change is
   trivial or CI is failing for an unrelated reason.
 - One task per branch. If unrelated work appears mid-task, follow the interruption
