@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-12
 >
-> Next task ID: `CP-0075`
+> Next task ID: `CP-0076`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -111,11 +111,16 @@
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
 - [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
   - Depends on: `CP-0074`
-- [ ] `CP-0027` `planned` — 0件、必須項目欠損、件数急減を正常終了にしない検知を作る。
+- [ ] `CP-0027` `planned` — 実行欠落、通信・応答・構造・データ品質・保存の失敗を段階別に検知し、異常なrunを正常終了または正常な0件にしない。
+  - Depends on: `CP-0024`
+  - Done when: HTTP成功だけに依存せず、最終URL、media type、source固有の目印、必須構造、件数、必須項目取得率、価格解析率、保存結果を検査し、異常なrunが観測の確定、最終成功日時、鮮度を更新しないことをtestで確認している。
+- [ ] `CP-0075` `planned` — source障害の切り分け、停止、保存済み原本からの再解析、検証後の手動再開を実装し、`source-failure` Runbookにする。
+  - Depends on: `CP-0025`, `CP-0026`, `CP-0027`
+  - Done when: sourceの運用状態、停止理由、直近試行、最終成功日時、失敗段階、診断証拠を確認でき、一つのsourceを停止したまま他sourceの取込を継続し、parser修正後に回帰test、versionを更新した再解析、dry run、差分確認を経て手動再開できる。
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
-  - Depends on: `CP-0074`
+  - Depends on: `CP-0074`, `CP-0075`
 - [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
-  - Depends on: `CP-0017`, `CP-0026`
+  - Depends on: `CP-0017`, `CP-0026`, `CP-0027`
   - Done when: source非由来の合成fixtureだけを使い、外部情報源へ接続せずに両方の検査が成功する。source由来fixtureはCIとGitへ含めない。
 
 完了条件: 2〜3店舗のデータが同じ観測モデルに入り、一つの失敗が他へ波及しない。
@@ -137,9 +142,10 @@
 ## Phase 5 — 試験運用して価値を判定する
 
 - [ ] `CP-0038` `planned` — 低頻度の増分取得を2〜4週間実行する。
-- [ ] `CP-0039` `planned` — 成功率、重複率、未同定率、レビュー時間、parser変更を記録する。
+  - Depends on: `CP-0075`
+- [ ] `CP-0039` `planned` — 成功率、重複率、未同定率、障害分類、検知・復旧時間、誤検知、レビュー時間、parser変更、保守時間を記録する。
 - [ ] `CP-0040` `planned` — 仕入れまたは売却判断に役立った事例を [Experiments](../experiments/README.md) に記録する。
-- [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されないことを確認する。
+- [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されず、sourceの停止理由と最終成功日時を確認できることを検証する。
 - [ ] `CP-0042` `planned` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序をRunbookにする。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。

@@ -8,7 +8,7 @@ Runbookは、開発者または運用者が同じ手順を再現する必要が�
 | --- | --- | --- |
 | `local-development.md` | Phase 1 | Docker要件、build、起動、設定、migration、test、lint、型チェック、停止、初期化 |
 | `ingestion.md` | 最初のCollector実装時 | 通常実行、dry run、再実行、結果確認、終了code |
-| `source-failure.md` | 定期取得開始時 | エラー分類、再試行、停止、parser変更検知、復旧確認 |
+| `source-failure.md` | Phase 3の`CP-0075`。定期取得開始前 | 実行欠落と失敗段階の判定、診断証拠の確認、再試行可否、source停止、正常原本との比較、parser修正、保存済み原本の再解析、dry run、手動再開、最終成功日時と鮮度の確認 |
 | `review-queue.md` | review機能実装時 | 確認方法、確定・却下・保留、監査履歴 |
 | `backup-restore.md` | DBとartifact保存実装時 | 対象、整合性、backup、空環境への復元、検証 |
 | `reparse.md` | parser version管理実装時 | 対象選択、旧結果保持、実行、差分確認、rollback |

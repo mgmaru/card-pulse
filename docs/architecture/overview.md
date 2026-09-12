@@ -143,11 +143,14 @@ Dockerでapplication runtime、依存version、network、volume、環境変数�
 - sourceごとに取込実行、設定、再試行、エラーを分ける。
 - APIとWorkerを別serviceにし、収集処理の停止や高負荷からAPIを分離する。
 - 0件と取得失敗を別の結果として扱う。
+- HTTP成功だけで取込成功とせず、実行開始、通信、応答、構造、データ品質、保存の各段階を分けて記録する。
 - parserの件数急減や必須項目欠損を検知し、壊れたデータを正常値として確定しない。欠損した抽出結果は中間段階に隔離し、再処理可能にする。
-- source停止中も保存済みデータのAPI照会を可能にする。
+- sourceの停止理由、直近の試行、最終成功日時を追跡し、異常な実行で観測の鮮度を更新しない。
+- source停止中も保存済みデータのAPI照会と他sourceの取込を可能にする。
+- 復旧時は保存済み原本でparser修正を検証し、新しいprocessor versionで追記型の再解析を行ってから手動で定期取得へ戻す。
 - X、OCR等の不安定または重い依存は、採用時も専用adapterへ閉じ込める。
 
-serviceを分けても、DB schemaとAPI・Workerの依存は残る。影響を抑えるため、後方互換なmigration、deployment順序、role別権限、rollback、backup・restoreを実装前のTODOとして扱う。
+失敗段階、診断証拠、停止・再開条件の詳細は[Collector契約](../contracts/collector.md#結果と失敗)に定め、実行手順は定期取得の開始前に`source-failure` Runbookへ記載する。serviceを分けても、DB schemaとAPI・Workerの依存は残る。影響を抑えるため、後方互換なmigration、deployment順序、role別権限、rollback、backup・restoreを実装前のTODOとして扱う。
 
 ## 変更の管理
 
