@@ -9,6 +9,42 @@ Card Pulseは現在、情報源とMVPの成立性を確認する段階です。�
 3. 変更対象に関係する [ADR](docs/adr/README.md)
 4. Collector変更の場合は [Collector契約](docs/contracts/collector.md) と対象のsource文書
 
+## ブランチとpull request
+
+この節をブランチ・マージ運用のsource of truthとします。手順の実行は [`start-task`](.agents/skills/start-task/SKILL.md) Skillが担い、`main` の保護設定がこの規則を強制します。
+
+### 作業ブランチ
+
+- `main` へ直接コミットしません。変更は必ず作業ブランチで行います。
+- ブランチ名は `cp-<タスクID>-<要約>` とします。要約は英小文字のkebab-caseです。例: `cp-0011-python-package-baseline`
+- 対応するタスクが [ロードマップ](docs/product/roadmap.md) に無い場合は、先に [`maintain-roadmap`](.agents/skills/maintain-roadmap/SKILL.md) でタスクを起こしてIDを確定します。
+- 作業ブランチは最新の `main` から作成します。
+
+### マージ
+
+- `main` へのマージはpull request経由のみとし、CIの成功を必須とします。
+- マージ方法はマージコミットだけを許可します。squash mergeとrebase mergeは無効にします。これは、どのコミット群が1つのタスクだったかを履歴に残すためです。fast-forwardではこの境界がグラフに残りません。
+- `main` が進んだ場合は、PRブランチを `main` の上へrebaseしてからマージします。交差した履歴を作らないためです。
+- マージ後も作業ブランチを削除しません。検証の経緯を追跡できる状態を保ちます。
+
+### `main` の保護設定
+
+| 設定 | 値 | 目的 |
+| --- | --- | --- |
+| Allow merge commits | ON | タスクの境界を履歴へ残す |
+| Allow squash merging | OFF | コミット単位の経緯を失わせない |
+| Allow rebase merging | OFF | fast-forward相当の直線化を防ぐ |
+| Require a pull request before merging | ON | `main` への直接pushを禁止する |
+| Require status checks to pass | ON | CI成功をマージ条件にする |
+| Require branches to be up to date | ON | 古い `main` の上での検査結果でマージさせない |
+| Require linear history | OFF | マージコミットを禁止しないため |
+
+必須にするstatus checkは、CIに存在するjobだけを指定します。品質検査とCompose検査のjobは `CP-0060` と `CP-0061` で追加され、その時点で必須指定へ加えます。
+
+### ブランチ名の機械検査
+
+現時点では導入しません。ブランチ名は `start-task` が生成し、誤った名前が付いても機能的な影響が無く、CIが失敗を報告できるのはpush後で修正コストが名前の付け直しになるためです。ruleset側で命名を強制する方法も、臨時の調査ブランチまで作成できなくなるため採用しません。手動でのブランチ作成が常態化した場合、または命名から作業単位を機械的に辿る仕組みを導入する場合に再検討します。
+
 ## 文書の扱い
 
 - 現在の要求は `docs/product/`、現在の設計は `docs/architecture/` と `docs/contracts/` を正とします。

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Start Task"
+  short_description: "Branch, pull request, and merge flow for roadmap tasks"
+  default_prompt: "Use $start-task to begin or finish a roadmap task on its own branch."
+policy:
+  allow_implicit_invocation: true
