@@ -33,7 +33,7 @@ flowchart LR
 
 利用側はDBへ直接接続しない。APIも外部公開せず、既定でloopbackまたはCompose内部networkだけにbindする。本人の端末間で利用する場合だけprivate networkと認証を使う。API、Worker、DBは別のruntime serviceとして扱う。
 
-DB製品、本人の端末内またはprivate network内の配置、台数、可用性構成は未決定である。構造化データをサーバー型DBへ置くことだけを現在の決定とし、製品は要件比較とPoC後にADRで選定する。
+構造化データはself-hostのPostgreSQL 18へ置く（[ADR-0014](../adr/0014-postgresql-self-hosted.md)）。本人の端末内またはprivate network内のどこへ配置するか、台数、可用性構成は未決定であり、MVPはsingle primaryで開始する。
 
 ## コード構成
 

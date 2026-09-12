@@ -40,7 +40,7 @@ Card Pulseはこれらに答えられるデータを作り、本人が管理す�
 | 主な処理 | 検索、商品分析、候補抽出、評価 | 取得、原本保存、解析、同定、集計 |
 | 成果 | 掘り出し物候補 | 根拠と鮮度を伴う相場情報 |
 
-Card PulseはCard Diggerと独立した責務を持つ。Card DiggerはCard Pulseの保存方式に依存せず、本人の端末またはprivate network内の非公開APIから価格情報を取得する。構造化データはサーバー型DBへ置き、API、Collection Worker、DBを別serviceとして扱う。DB製品は要件比較とPoC後に決定する。
+Card PulseはCard Diggerと独立した責務を持つ。Card DiggerはCard Pulseの保存方式に依存せず、本人の端末またはprivate network内の非公開APIから価格情報を取得する。構造化データはサーバー型DBへ置き、API、Collection Worker、DBを別serviceとして扱う。DB製品は要件比較とPoCを経て[ADR-0014](../adr/0014-postgresql-self-hosted.md)でPostgreSQL 18に決定した。
 
 ## 価値の検証
 

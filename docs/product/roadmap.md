@@ -61,7 +61,8 @@
   - Evidence: [DB候補比較](../research/database-candidate-comparison-2026-09.md#結論)でPostgreSQL、MariaDB、MongoDB、SQLiteを必須条件と8つの判断軸で比較し、PostgreSQL 18.6とMariaDB 12.3.3を`CP-0009`のPoC対象に絞った。BaaSとmanaged hostingはengine選定と別軸として[hosting方式とBaaSの検討](../research/database-candidate-comparison-2026-09.md#hosting方式とbaasの検討)へ記録し、MVPはself-host構成を前提とした。
 - [x] `CP-0009` `done` — 上位候補で取込、同時照会、集計、migration、backup・復元のPoCを行う。
   - Evidence: [CP-0009 DB PoC結果](../research/database-poc-2026-09.md#結論)に、PostgreSQL 18.6とMariaDB 12.3.3を1倍（約540万行）と10倍（約4,430万行）で測定した結果を記録した。両候補がPoC合格条件10項目を満たし、追記型保存の権限強制、失敗migrationの部分適用、論理復元時間に差が出た。測定harnessは[`scripts/db_poc/`](../../scripts/db_poc/README.md)にある。
-- [ ] `CP-0010` `planned` — DB製品をADRで決定し、ADR-0004の未決事項を解消する。
+- [x] `CP-0010` `done` — DB製品をADRで決定し、ADR-0004の未決事項を解消する。
+  - Evidence: [ADR-0014](../adr/0014-postgresql-self-hosted.md)で、`CP-0009`の実測を根拠にself-hostのPostgreSQL 18を採用し、[ADR-0004](../adr/0004-server-database-selection.md)が残したDB製品とhosting providerの未決事項を解消した。決定を[MVP定義](mvp.md)、[プロダクト構想](vision.md)、[アーキテクチャ概要](../architecture/overview.md)、[DB要件](../architecture/database-requirements.md)、`README.md`へ反映した。
 - [ ] `CP-0011` `planned` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
 - [ ] `CP-0012` `planned` — Docker ComposeでAPI、Worker、選定DB、artifact storageを起動するローカル環境を作る。
 - [ ] `CP-0013` `planned` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。

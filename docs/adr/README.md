@@ -29,6 +29,7 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | [0011](0011-no-external-source-inquiries.md) | Superseded | MVP情報源を公開条件だけで判断し外部照会を行わない |
 | [0012](0012-private-personal-operation.md) | Accepted | Card Pulseを個人用の非公開アプリとして運用する |
 | [0013](0013-python-toolchain-and-migrations.md) | Accepted | CPython 3.14、uv、Alembicを開発基盤に採用する |
+| [0014](0014-postgresql-self-hosted.md) | Accepted | 構造化データのDBにPostgreSQL 18を採用し、self-hostで運用する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 

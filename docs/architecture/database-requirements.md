@@ -8,7 +8,7 @@
 
 ## 目的
 
-この文書は、DB製品とhosting方式を選ぶ前に、Card PulseがDBへ要求する容量、同時実行、整合性、backup・復旧、運用、security、費用の基準を定める。`CP-0008`では候補の必須条件と比較基準として使い、`CP-0009`では同じ負荷と合格条件でPoCを行う。DB製品とhosting方式は、比較とPoCの後に`CP-0010`のADRで決定する。
+この文書は、Card PulseがDBへ要求する容量、同時実行、整合性、backup・復旧、運用、security、費用の基準を定める。`CP-0008`では候補の必須条件と比較基準として使い、`CP-0009`では同じ負荷と合格条件でPoCを行った。製品とhosting方式は[ADR-0014](../adr/0014-postgresql-self-hosted.md)でself-hostのPostgreSQL 18に決定し、この文書は採用後も要求水準と再評価条件の正であり続ける。
 
 ## 前提と数値の扱い
 

@@ -23,11 +23,11 @@ MVPでは、次の仮説を検証する。
 | 情報源 | 晴れる屋2、遊々亭、フルコンプ池袋店。晴れる屋2から縦に実装し、残り2情報源を追加する |
 | 補助入力 | CSVまたはJSONによる手動取込1系統 |
 | 価格 | 買取価格を優先 |
-| 保存 | 比較検証後に選定するサーバー型DB。原本本体は本人が管理する別storageに保存 |
+| 保存 | self-hostのPostgreSQL 18。原本本体は本人が管理する別storageに保存 |
 | 照会 | 最新価格、中央値、最高値、最低値、店舗数、鮮度、スプレッド、履歴を返す非公開API |
 | 実行 | APIとCollection Workerを別サービスとして本人の端末またはprivate network内で実行 |
 | ローカル開発 | Docker ComposeでAPI、Worker、DB、artifact storageを再現 |
-| DB要件 | [容量、同時実行、整合性、backup・復旧、運用、費用の基準](../architecture/database-requirements.md)を満たすserver型DBを比較・検証して選定 |
+| DB要件 | [容量、同時実行、整合性、backup・復旧、運用、費用の基準](../architecture/database-requirements.md)を満たすことを実測で確認し、[ADR-0014](../adr/0014-postgresql-self-hosted.md)で製品を決定 |
 | 試験期間 | 2〜4週間 |
 
 ## 対象外
@@ -89,7 +89,6 @@ MVPでは、次の仮説を検証する。
 - カードを一意に扱うために必要な識別項目
 - 鮮度を判定する期間
 - 同一原本・同一観測の重複防止キー
-- DB製品とhosting方式
 - 価格の訂正、失効、再解析の表現
 - 処理実行、抽出結果、観測候補、同定試行の重複防止と派生関係
 - 取込、再解析、review確定のtransaction boundary
