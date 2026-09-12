@@ -90,6 +90,7 @@ Collectorの境界は [Collector契約](docs/contracts/collector.md)、エンテ
 | [用語集](docs/domain/glossary.md) | ドメイン用語の共通定義 |
 | [アーキテクチャ概要](docs/architecture/overview.md) | システム境界、レイヤ、データフロー |
 | [データモデル](docs/architecture/data-model.md) | エンティティ、関係、不変条件 |
+| [DB要件](docs/architecture/database-requirements.md) | 容量、同時実行、整合性、backup・復旧、運用、費用の選定基準 |
 | [Collector契約](docs/contracts/collector.md) | 情報源adapterの入出力と失敗規則 |
 | [情報源マップ](docs/sources/source-map.md) | 候補情報源の比較と選定状況 |
 | [ADR](docs/adr/README.md) | 採用した設計判断と理由 |

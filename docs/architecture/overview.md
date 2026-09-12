@@ -107,7 +107,7 @@ source adapterは外部形式を共通契約へ変換するが、新しい情報
 - source、shop、ingest run、raw artifact metadata、processing run、extracted record、observation candidate、identity resolution attempt、card identity、card external reference、price observation、review itemを保存する。
 - API、Worker、migration用に異なるroleを持たせる。
 - Compose内部networkまたは本人のprivate networkからのみ接続可能にする。
-- 製品選定では整合性、transaction、query、backup・復元、運用、費用を評価する。
+- [DB要件](database-requirements.md)に従い、整合性、transaction、query、backup・復元、運用、費用を満たす製品を比較・検証する。
 
 ### Raw Artifact Storage
 
@@ -189,5 +189,6 @@ Dockerでapplication runtime、依存version、network、volume、環境変数�
 - [ADR-0007: 処理段階による構造化データの分離](../adr/0007-layered-ingestion-data.md)
 - [ADR-0008: カード同定の内部UUID](../adr/0008-opaque-card-identity-id.md)
 - [ADR-0012: 個人用の非公開運用](../adr/0012-private-personal-operation.md)
+- [DB要件](database-requirements.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)

@@ -55,7 +55,8 @@
 
 - [x] `CP-0006` `done` — Python version、パッケージ管理、migration手段の決定をADRに残す。
   - Evidence: [ADR-0013](../adr/0013-python-toolchain-and-migrations.md)でCPython 3.14、uvによるproject・lock管理、AlembicによるmigrationとDB選定後に検証する事項を決定した。
-- [ ] `CP-0007` `planned` — 想定データ量、同時接続、整合性、backup・復旧、運用、費用からDB要件を定義する。
+- [x] `CP-0007` `done` — 想定データ量、同時接続、整合性、backup・復旧、運用、費用からDB要件を定義する。
+  - Evidence: [DB要件](../architecture/database-requirements.md)に、初期・10倍負荷、queryと整合性の合格基準、RPO・RTO、backup世代、権限、保守時間、費用上限、PoC条件、実測後の再評価条件を定義した。
 - [ ] `CP-0008` `planned` — 複数のDB候補を [DB選定の判断軸](../learning/database-selection.md) で比較する。
 - [ ] `CP-0009` `planned` — 上位候補で取込、同時照会、集計、migration、backup・復元のPoCを行う。
 - [ ] `CP-0010` `planned` — DB製品をADRで決定し、ADR-0004の未決事項を解消する。
