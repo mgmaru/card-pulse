@@ -19,6 +19,8 @@
 
 この結果はDB製品の採用決定ではない。[DB要件](../architecture/database-requirements.md)の同一schema、負荷、query、障害、復元条件で両候補を測り、`CP-0010`のADRで製品とhosting方式を決定する。[ADR-0004](../adr/0004-server-database-selection.md)の未決事項はそれまで維持する。
 
+hosting方式はengine選定と別の軸である。SupabaseやNeonのようなBaaS・managed serviceも検討したが、Internet経由の接続経路が`DB-SEC-01`と[ADR-0012](../adr/0012-private-personal-operation.md)に適合せず、3年分のデータを保持する構成の費用も`DB-COST-01`の暫定上限を超える。このためMVPはself-host構成を前提とし、BaaSを`CP-0009`のPoC対象へ追加しない。詳細は[hosting方式とBaaSの検討](#hosting方式とbaasの検討)に示す。
+
 ## 比較方法
 
 [DB選定の判断軸](../learning/database-selection.md)に従い、先に必須条件を判定し、通過できる候補だけを8軸で採点した。候補群はrelational databaseからPostgreSQLとMariaDB、document databaseからMongoDB、embedded databaseの比較基準としてSQLiteを選んだ。分析専用DBは主DBの候補に含めない。
@@ -90,7 +92,7 @@ roleとtable privilegeを分け、接続元を`user@host`で制限し、TLSを�
 
 ## 費用と運用時間の事前見積もり
 
-DB engineとhosting方式を混同しないため、両候補を同じself-host構成で比較する。本人の既存host上でsingle-primary containerを動かし、暗号化volumeへDBを置き、日次backupを別障害領域の非公開保存先へ送る。replicaと有料monitoringは初期構成に含めない。
+DB engineとhosting方式を混同しないため、両候補を同じself-host構成で比較する。本人の既存host上でsingle-primary containerを動かし、暗号化volumeへDBを置き、日次backupを別障害領域の非公開保存先へ送る。replicaと有料monitoringは初期構成に含めない。self-hostを前提とする理由は[hosting方式とBaaSの検討](#hosting方式とbaasの検討)に示す。
 
 実容量、追加消費電力、backup保存先の実請求がまだないため、次の金額は価格情報ではなく`DB-COST-01`内に収めるための予算配分である。CP-0009では実測したtable、index、log、backup容量とhost条件から差し替える。
 
@@ -110,6 +112,87 @@ DB engineとhosting方式を混同しないため、両候補を同じself-host�
 | MariaDB | 5〜8時間 | 0.75〜1時間 | 1〜2時間 | driver build、DDL回復、constraint設定、LTS更新 |
 
 これらは実績ではなくPoCの作業計画である。構築、backup確認、patch更新、監視確認、空環境restoreを実施して実時間へ置き換える。MongoDBとSQLiteは要件を満たす構成がないため、低い費用を採用理由にしない。
+
+## hosting方式とBaaSの検討
+
+### engine軸とhosting軸を分ける
+
+Supabase、Neon、Firebase等のBaaSやmanaged serviceは、PostgreSQLやMariaDBと並ぶDB engineの候補ではない。Supabaseの構造化データ層はPostgreSQL自体であり、選択肢としては「どのengineを使うか」ではなく「選んだengineをどこで動かすか」に属する。[DB選定の判断軸](../learning/database-selection.md)も、managed serviceが提供する機能とDB engine自体の機能を混同することを選定上の問題として挙げている。
+
+| 軸 | 選択肢 | 決定する場所 |
+| --- | --- | --- |
+| DB engine | PostgreSQL / MariaDB | `CP-0008`の比較と`CP-0009`のPoC |
+| hosting方式 | self-host container / managed Postgres / BaaS | `CP-0010`のADR |
+
+このためBaaSを`CP-0009`のPoC対象へ追加しない。engineが同じである限り、PostgreSQL 18.6のPoC結果はmanaged構成を評価する材料としてもそのまま使える。
+
+### Supabaseと必須条件の突き合わせ
+
+代表例としてSupabaseのPro planを[候補の必須条件](../architecture/database-requirements.md#候補の必須条件)へ当てる。整合性とtransactionは素のPostgreSQLであるため問題にならず、不適合は接続経路、version固定、費用に集中する。
+
+| 必須条件 | 判定 | 根拠 |
+| --- | --- | --- |
+| private networkからのserver接続 | 不適合 | DB endpointがInternet上にある。IP範囲を制限するnetwork restrictionsはあるが、公式docsは「Postgresとpoolerに適用され、PostgREST、Storage、AuthのようなHTTPS APIとclient librariesには適用されない」と明記している。`DB-SEC-01`とADR-0012が禁じるInternet到達可能な面が残る |
+| `DB-INT-01`〜`DB-INT-08` | 適合 | PostgreSQL本体の機能。custom role、foreign key、`CHECK`、`jsonb`を利用できる |
+| 1倍profileと代表query | 未確認 | Pro同梱のMicro instanceは1 GB RAMであり、3年分の想定行数に対して不足する。Small以上への引き上げを前提に費用を見る必要がある |
+| RPO・RTO、世代保持、空環境復元 | 条件付き | Pro planの日次backup 7日保持は`DB-REC-03`の日次7世代に一致する。ただし物理backupは直接downloadできず、`DB-REC-04`が要求する本人管理の可搬なlogical backupは自分で`pg_dump`する必要がある |
+| role分離、非公開network、rotation、保存時暗号化 | 部分適合 | custom roleとcredential更新はできるが、非公開networkの条件を満たせない。`pg_hba.conf`とsuperuserはprovider管理下にある |
+| Docker Compose・CIと同一major version | 不適合 | hosted環境はPostgres 17までで、PoC baselineの18.6と揃えられない。Postgres 18対応はSupabaseの2026-05-04時点の回答で「not very soon, but eventually in 2026」とされている。`DB-OPS-01`のmajor version固定を満たせない |
+| 3年費用が暫定上限内 | 不適合 | 次項のとおり3年目の構成が5,000円を超える |
+
+根拠は[Supabase network restrictions](https://supabase.com/docs/guides/platform/network-restrictions)、[Supabase database backups](https://supabase.com/docs/guides/platform/backups)、[Supabase Discussion #42681](https://github.com/orgs/supabase/discussions/42681)（確認日: 2026-09-12）とする。Tokyo regionは[Supabase regions](https://supabase.com/docs/guides/platform/regions)に`ap-northeast-1`として提供がある。
+
+### 費用の試算
+
+金額は[Supabase pricing](https://supabase.com/pricing)と[Supabase compute and disk](https://supabase.com/docs/guides/platform/compute-and-disk)（確認日: 2026-09-12）、為替は2026-09-11終値の1 USD = 154.17円（[Trading Economics](https://tradingeconomics.com/japan/currency)、確認日: 2026-09-12）で換算する。
+
+| 構成 | 月額 (USD) | 月額 (円) | `DB-COST-01`の判定 |
+| --- | ---: | ---: | --- |
+| Free | 0 | 0円 | 対象外。DB 500 MB上限、自動backupなし、1週間の非活動でpause。28日分1倍profileの約430万行を保持できない |
+| Pro最小（Micro同梱、disk 8 GB以内） | 25 | 約3,854円 | 目標3,000円を超え、上限5,000円内 |
+| Pro + Small compute + disk 30〜65 GB | 32.75〜37.13 | 約5,050〜5,720円 | 暫定上限5,000円を超過 |
+| Pro + PITR add-on | +100 | +約15,417円 | 検討対象外 |
+
+disk 30〜65 GBは、1倍profileの28日分約430万行を3年（約39倍、約1.7億行）へ延ばし、index込み1行200〜400 byteと仮定した幅である。実測値ではなく、[容量要件](../architecture/database-requirements.md#容量要件)の`DB-CAP-03`で算定し直す対象とする。Pro planはdisk 8 GBを含み、超過分が$0.125/GB、Small computeへの引き上げが同梱分との差額$5にあたる。
+
+[費用と運用時間の事前見積もり](#費用と運用時間の事前見積もり)のself-host構成は初年度1,300〜2,600円、3年目1,900〜4,000円である。Supabaseは最小構成でもself-hostの上限側と同等であり、3年分のデータを載せると上限を超える。加えて課金がUSD建てであるため、為替が費用の変動要因になる。2026-07-29の163.87円/USDで換算するとPro最小構成だけで約4,097円になり、それだけで上限5,000円の8割を占める。
+
+`DB-REC-04`が要求する自前のlogical backupはmanaged構成ではegressとして課金される。Pro planは250 GB/月を含むため、圧縮dumpを週次で送る運用なら収まる見込みだが、dumpの実容量を測っていないため確定した結論にはしない。managed構成を再検討する場合は`CP-0009`で測る圧縮dump容量を根拠にする。
+
+### BaaS機能とCard Pulseの構成
+
+費用の大半を占めるBaaS固有機能は、現在の設計では利用できない。
+
+| Supabaseの機能 | Card Pulseでの可否 |
+| --- | --- |
+| PostgREST（tableの自動REST API） | 使えない。[ADR-0004](../adr/0004-server-database-selection.md)でclientはDBへ直接接続せずCard Pulse APIを利用すると決めている。取込、同定、reviewのdomain規則を経由しない読み書き経路は作らない |
+| Auth・Row Level Security | 不要。利用者はプロジェクトオーナー本人だけである |
+| Storage | 使えない。raw artifactは`var/`配下のローカル保存領域に限定する |
+| Realtime | 不要。取得はsourceごとに日次1回以下である |
+| Edge Functions | 不要。Collection Workerはローカルで実行する |
+| managed Postgres本体と日次backup | 唯一有効な部分 |
+
+実際に使うのがmanaged Postgresの部分だけであれば、BaaSではなくmanaged Postgresそのものを比較する方が妥当である。ただしInternet経由の接続を前提とする形態は、provider名にかかわらず`DB-SEC-01`とADR-0012に適合しない。Neonはstorage $0.35/GB-monthとscale-to-zeroを持ち、日次batch中心という負荷の形にはよく合うが（[Neon pricing](https://neon.com/pricing)、確認日: 2026-09-12）、接続経路の条件は同じである。Firebase・Firestoreは、本文書がMongoDBを除外した理由と同じく、DBが参照整合性を強制せずAlembicの公式DDL実装も持たないため、hosting以前にengineとして必須条件を満たさない。
+
+なお、取得原本から導いた抽出値と価格履歴を第三者のmanaged service上へ置くことは、ADR-0012が「本人のローカル保存領域に限定する」とした前提そのものを変える。これは法的評価ではなく、ADRの前提が変わるという指摘である。
+
+### engine選定への示唆
+
+将来ADR-0012の前提を外してmanaged hostingへ移す可能性を残す場合、移行先の広さがengineの選択に影響する。
+
+| engine | managed・BaaSの選択肢 |
+| --- | --- |
+| PostgreSQL | Supabase、Neon、Cloud SQL、RDS・Aurora等が同一engineとして存在し、logical backupのrestoreで移せる |
+| MariaDB | 選択肢が限られる。Cloud SQLやRDSの「MySQL」はMariaDBではないため、同一engineの移行にならない |
+
+この差は[暫定採点](#暫定採点)の「費用・可搬性・拡張性」へ反映していない。採点方法を変えずに点数だけを動かすと同じ基準日の比較結果を事後に書き換えることになるため、`CP-0010`で受け入れる欠点と将来の選択肢として扱う。
+
+### CP-0010への申し送り
+
+- `CP-0010`のADRの`Alternatives considered`へ、BaaSとmanaged hostingを検討した事実と却下理由を記録する。検討しなかったのではなく、`DB-SEC-01`、ADR-0012、`DB-COST-01`に反するため採らないという形で残す。
+- PoC baselineはPostgreSQL 18.6のまま維持する。providerの対応versionへself-hostのmajor versionを今から合わせない。ADRには、managedへ移す場合に提供major versionが制約になることを再評価条件として書く。
+- hostをまたぐ構成が必要になった場合は、BaaSではなく認証済みprivate networkで解く。これは`DB-SEC-01`が想定している経路である。
+- BaaSを再検討する条件は、利用者、公開範囲、データ配置を新しいADRでADR-0012から置き換えたときとする。その時点で価格、plan、提供major versionを確認し直す。
 
 ## CP-0009の共通検証事項
 

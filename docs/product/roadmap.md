@@ -58,7 +58,7 @@
 - [x] `CP-0007` `done` — 想定データ量、同時接続、整合性、backup・復旧、運用、費用からDB要件を定義する。
   - Evidence: [DB要件](../architecture/database-requirements.md)に、初期・10倍負荷、queryと整合性の合格基準、RPO・RTO、backup世代、権限、保守時間、費用上限、PoC条件、実測後の再評価条件を定義した。
 - [x] `CP-0008` `done` — 複数のDB候補を [DB選定の判断軸](../learning/database-selection.md) で比較する。
-  - Evidence: [DB候補比較](../research/database-candidate-comparison-2026-09.md#結論)でPostgreSQL、MariaDB、MongoDB、SQLiteを必須条件と8つの判断軸で比較し、PostgreSQL 18.6とMariaDB 12.3.3を`CP-0009`のPoC対象に絞った。
+  - Evidence: [DB候補比較](../research/database-candidate-comparison-2026-09.md#結論)でPostgreSQL、MariaDB、MongoDB、SQLiteを必須条件と8つの判断軸で比較し、PostgreSQL 18.6とMariaDB 12.3.3を`CP-0009`のPoC対象に絞った。BaaSとmanaged hostingはengine選定と別軸として[hosting方式とBaaSの検討](../research/database-candidate-comparison-2026-09.md#hosting方式とbaasの検討)へ記録し、MVPはself-host構成を前提とした。
 - [ ] `CP-0009` `planned` — 上位候補で取込、同時照会、集計、migration、backup・復元のPoCを行う。
 - [ ] `CP-0010` `planned` — DB製品をADRで決定し、ADR-0004の未決事項を解消する。
 - [ ] `CP-0011` `planned` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
