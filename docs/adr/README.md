@@ -28,11 +28,12 @@ AcceptedとなったADRは、誤字やリンク切れ以外では結論を書き
 | [0010](0010-pokemon-mvp-source-candidates.md) | Superseded | ポケモンカードのMVP情報源候補に晴れる屋2、遊々亭、フルコンプ池袋店を選ぶ |
 | [0011](0011-no-external-source-inquiries.md) | Superseded | MVP情報源を公開条件だけで判断し外部照会を行わない |
 | [0012](0012-private-personal-operation.md) | Accepted | Card Pulseを個人用の非公開アプリとして運用する |
+| [0013](0013-python-toolchain-and-migrations.md) | Accepted | CPython 3.14、uv、Alembicを開発基盤に採用する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 
 ## ADR管理の機械検査
 
-2026-09-09時点では、ADR専用validatorの導入を見送る。ADR-0008の追加で件数が7件から8件へ増えたため再検討したが、一覧、状態、日付、必須section、置換関係を手作業で確認できる規模にあり、既存の文書リンク検査でファイルと参照の欠落は検出できる。現時点で専用validatorが防ぐ具体的な不整合も発生していないため、検査規則とCIを増やす費用を先に負わない。
+2026-09-12にADR-0013を追加して13件となったため、専用validatorの導入を再検討し、引き続き見送った。一覧、状態、日付、必須section、置換関係は一つの変更内で確認でき、既存の文書リンク検査がファイルと参照の欠落を検出する。追加した5件を含めてID、状態、一覧、置換関係の不整合は発生しておらず、現時点では検査規則とCIの保守対象を増やす具体的な効果が小さい。
 
-ADRが12件へ達した場合、または状態遷移、置換関係、一覧更新の不整合が発生した時点で、専用validatorを再検討する。
+ADRが20件へ達した場合、または状態遷移、置換関係、一覧更新の不整合が発生した時点で、専用validatorを再検討する。

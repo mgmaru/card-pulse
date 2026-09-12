@@ -53,7 +53,8 @@
 
 ## Phase 1 — 最小の開発基盤を作る
 
-- [ ] `CP-0006` `planned` — Python version、パッケージ管理、migration手段の決定をADRに残す。
+- [x] `CP-0006` `done` — Python version、パッケージ管理、migration手段の決定をADRに残す。
+  - Evidence: [ADR-0013](../adr/0013-python-toolchain-and-migrations.md)でCPython 3.14、uvによるproject・lock管理、AlembicによるmigrationとDB選定後に検証する事項を決定した。
 - [ ] `CP-0007` `planned` — 想定データ量、同時接続、整合性、backup・復旧、運用、費用からDB要件を定義する。
 - [ ] `CP-0008` `planned` — 複数のDB候補を [DB選定の判断軸](../learning/database-selection.md) で比較する。
 - [ ] `CP-0009` `planned` — 上位候補で取込、同時照会、集計、migration、backup・復元のPoCを行う。
