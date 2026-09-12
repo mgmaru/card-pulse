@@ -117,6 +117,7 @@ Skillが `.agents/` の共有で、subagentがツールごとに分かれてい�
 | [`maintain-roadmap`](.agents/skills/maintain-roadmap/SKILL.md) | 安定ID、状態、依存関係、割り込み・再開を保ってroadmapを更新する |
 | [`write-project-docs`](.agents/skills/write-project-docs/SKILL.md) | 文書種別とsource of truthに従ってプロジェクト文書を作成・改訂する |
 | [`maintain-tool-parity`](.agents/skills/maintain-tool-parity/SKILL.md) | エージェント定義とSkillを両ツールへ反映し、乖離を検査する |
+| [`start-task`](.agents/skills/start-task/SKILL.md) | ロードマップのタスクを作業ブランチで開始し、pull requestで完了する |
 
 Skillは反復作業の手順を定義し、検査スクリプトは決定的な結果を返します。CIでも同じスクリプトを呼び出し、Skillの発動有無やツールの違いに依存せず検査します。
 
