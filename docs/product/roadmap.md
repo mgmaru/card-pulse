@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0076`
+> Next task ID: `CP-0077`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -86,6 +86,9 @@
   - Depends on: `CP-0059`
   - Done when: [CONTRIBUTING.md](../../CONTRIBUTING.md)をsource of truthとしてSkillが作業ブランチを作成でき、`main`へのマージにpull requestとCI成功が必要になり、ブランチ名CIの導入判断が記録されている。
   - Evidence: [ブランチとpull request](../../CONTRIBUTING.md#ブランチとpull-request)へ、`cp-<タスクID>-<要約>`の命名、マージコミットのみ許可する理由、rebase後にマージする規則、マージ後もブランチを残す判断、保護設定の一覧、ブランチ名の機械検査を見送る理由と再検討条件を記録した。[`start-task`](../../.agents/skills/start-task/SKILL.md) Skillが分岐からpull request、マージまでの手順を実行する。`main`のrulesetでpull requestとCI成功を必須にし、squash mergeとrebase mergeを無効化した。必須status checkは現存する`Documentation`と`Agent configuration`から開始し、`CP-0060`と`CP-0061`で追加する。
+
+- [x] `CP-0076` `done` — ADRに判断理由を明示し、決め手となる一文を強調する書き方を定める。
+  - Evidence: [判断理由の書き方](../adr/README.md#判断理由の書き方)を規則の正とし、`Decision`で理由の中心となる一文を太字にすること、強調を一つに絞ること、理由を比較・制約・回避したい失敗として書くことを定めた。[ADR template](../adr/template.md)、[`write-project-docs`](../../.agents/skills/write-project-docs/SKILL.md)、`AGENTS.md`、[CONTRIBUTING.md](../../CONTRIBUTING.md#文書の扱い)から同じ規則を参照する。既存ADRは[ADR README](../adr/README.md#状態)の規則どおり書き換えず、[ADR-0015](../adr/0015-quality-check-toolchain.md)の`Decision`を手本として示した。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 

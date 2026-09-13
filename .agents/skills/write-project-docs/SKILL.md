@@ -42,6 +42,7 @@ Use the `maintain-roadmap` workflow for task IDs, state changes, interruption, a
 
 - Treat `docs/product/`, `docs/architecture/`, `docs/contracts/`, and accepted ADRs as current guidance. Treat `docs/research/` as historical or time-bound evidence.
 - Record a multi-component or future-constraining decision in a new ADR. Do not rewrite a superseded ADR's historical decision.
+- In an ADR, state why the chosen option was preferred and emphasize the decisive sentence in bold, following `docs/adr/README.md`. Express the reason as a difference from the alternatives, an accepted constraint, or a failure being avoided, not as a restatement of the decision.
 - Add a checked date and supporting URL to volatile external facts such as terms, prices, rate limits, versions, and access restrictions.
 - Keep field-level definitions in migrations, code types, or machine-readable schemas once they exist. Explain meaning and invariants in Markdown rather than duplicating generated detail.
 - Link to an existing explanation instead of copying it into multiple documents.
