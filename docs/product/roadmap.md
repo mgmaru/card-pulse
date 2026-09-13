@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0085`
+> Next task ID: `CP-0086`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -130,6 +130,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0083`
   - Owner action: 公開してよい対象の範囲を判断する。
   - Done when: 公開してよいものと公開しないものの境界、`docs/sources/`と[ADR-0009](../adr/0009-pokemon-mvp-sources.md)に残る代表サンプルの扱い、LICENSEの有無が決まり、[ADR-0012](../adr/0012-private-personal-operation.md)との関係を明示した新しいADRに記録されている。
+- [ ] `CP-0085` `planned` — `main`のrulesetをrepositoryから可視化し、実設定との乖離を検出できるようにする。
+  - Depends on: `CP-0083`
+  - Done when: rulesetのexportがrepositoryに置かれ、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の表との対応が読み取れる。実設定との乖離を決定的に検出する手段があり、bypass actorの扱いと、admin権限を持つtokenをsecretとして置くかどうかの判断がADRに記録されている。committedなJSONをCIから自動適用しない理由も同じADRへ書く。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
