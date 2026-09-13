@@ -1,6 +1,6 @@
 # Card Pulse
 
-Card Pulse は、複数の情報源からTCGカードの価格観測値を継続的に保存し、仕入れ候補と売却先を評価するための個人用データ基盤です。プロジェクトオーナー本人だけが使い、アプリ、API、取得データを一般公開しません。このリポジトリもprivateとして運用します（[ADR-0019](docs/adr/0019-private-repository.md)）。
+Card Pulse は、複数の情報源からTCGカードの価格観測値を継続的に保存し、仕入れ候補と売却先を評価するための個人用データ基盤です。プロジェクトオーナー本人だけが使い、アプリ、API、取得データを一般公開しません。このリポジトリは`main`の保護設定を優先してpublicですが、[ADR-0012](docs/adr/0012-private-personal-operation.md)が定める非公開の範囲とは食い違っており、解消は`CP-0084`で扱います（[ADR-0020](docs/adr/0020-public-repository-for-branch-protection.md)）。
 
 現在は構想・設計段階です。最初に証明するのは完全自動収集の実現性ではなく、次の3点です。
 

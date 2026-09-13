@@ -48,7 +48,8 @@ ADRの価値は、何を選んだかよりも、なぜその選択に至った�
 | [0016](0016-local-compose-artifact-volume.md) | Accepted | ローカル環境のartifact storageをDocker volume上のfilesystemにする |
 | [0017](0017-colima-container-runtime.md) | Superseded | ローカル開発のcontainer runtimeにColimaを採用する |
 | [0018](0018-per-os-container-runtime.md) | Accepted | container runtimeを選定基準で決め、OSごとに実装を選ぶ |
-| [0019](0019-private-repository.md) | Accepted | repositoryをprivateにし、公開範囲をADR-0012へそろえる |
+| [0019](0019-private-repository.md) | Superseded | repositoryをprivateにし、公開範囲をADR-0012へそろえる |
+| [0020](0020-public-repository-for-branch-protection.md) | Accepted | repositoryをpublicへ戻し、`main`の保護設定を公開範囲の整合より優先する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 
