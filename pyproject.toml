@@ -19,3 +19,48 @@ packages = ["src/card_pulse"]
 [tool.uv]
 # ADR-0013でuv自体のversionも固定する。
 required-version = ">=0.12.13,<0.13"
+
+# 品質検査toolはADR-0015で決定する。lockで正確なversionを固定するため、
+# ここでは互換性を壊す更新だけを除外する範囲を宣言する。
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1,<3",
+    "pytest>=9.1.1,<10",
+    "ruff>=0.16.7,<0.17",
+]
+
+[tool.ruff]
+line-length = 100
+# .agents/のscriptはCodexとClaude Codeが素のpython3で実行するため、
+# 3.14を前提とする本体の検査規則を適用しない。scripts/db_poc/はCP-0009の測定harnessで、
+# 独自のpyproject.tomlとlockを持ち、記録として凍結する。
+extend-exclude = [".agents", "scripts/db_poc"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
+    "F",    # pyflakes
+    "I",    # import順序
+    "N",    # 命名規約
+    "UP",   # 新しいPython構文への更新
+    "B",    # bugbear
+    "SIM",  # 冗長な構文の単純化
+    "TID",  # 相対importの制限
+    "RUF",  # ruff固有
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# 層をまたぐimportを読み取れるよう、package内でも絶対importを使う。
+ban-relative-imports = "all"
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["src", "tests", "scripts"]
+exclude = ["^scripts/db_poc/"]
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers", "--import-mode=importlib"]

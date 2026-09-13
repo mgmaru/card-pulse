@@ -66,7 +66,8 @@
 - [x] `CP-0011` `done` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
   - Evidence: [ADR-0013](../adr/0013-python-toolchain-and-migrations.md)に従い、`pyproject.toml`へ`requires-python = ">=3.14,<3.15"`とuvの`required-version`を、`.python-version`へCPython 3.14.7を固定した。`src/card_pulse/`をsrc layoutの単一installable packageとし、[アーキテクチャ概要](../architecture/overview.md#コード構成)の責務境界に対応する12 packageを作成した。生成した`uv.lock`で`uv sync --locked`、全subpackageのimport、wheel buildが成功することを確認した。runtime依存は空とし、開発依存と品質検査コマンドは`CP-0013`、Alembic環境は対象schemaが決まる時点へ残した。
 - [ ] `CP-0012` `planned` — Docker ComposeでAPI、Worker、選定DB、artifact storageを起動するローカル環境を作る。
-- [ ] `CP-0013` `planned` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
+- [x] `CP-0013` `done` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
+  - Evidence: [ADR-0015](../adr/0015-quality-check-toolchain.md)でruff 0.16.7、mypy 2.3.1、pytest 9.1.1を採用し、`pyproject.toml`の`[dependency-groups]`と各tool設定へ反映して`uv.lock`を更新した。setupは`uv sync --locked`、全検査は`python3 scripts/check.py`とし、各段階を`uv run --locked`経由で実行する。`.venv`を削除した状態から`uv sync --locked`を実行し、format、lint、型チェック、testの4段階が成功すること、型不整合を含むfileを置くと3段階が失敗して終了codeが1になること、`uv.lock`と`pyproject.toml`が食い違うと`--locked`が検査前に失敗することを確認した。コマンドは[開発環境と品質検査](../../CONTRIBUTING.md#開発環境と品質検査)を正とし、CIへの追加は`CP-0060`で行う。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。

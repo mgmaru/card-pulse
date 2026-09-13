@@ -77,9 +77,43 @@ auto-mergeは使いません。CIの通過と同時にマージされると、�
 - 自動同定の誤結合を避け、曖昧な結果はレビュー対象にします。
 - 認証情報、Cookie、個人情報、取得原本、開発用DB volumeをGitへ追加しません。
 
+## 開発環境と品質検査
+
+toolの選定理由と検査対象の範囲は [ADR-0015](docs/adr/0015-quality-check-toolchain.md)、規則そのものは `pyproject.toml` の `[tool.ruff]`、`[tool.mypy]`、`[tool.pytest.ini_options]` を正とします。
+
+### セットアップ
+
+[uv](https://docs.astral.sh/uv/) を導入し、リポジトリ直下で次を実行します。`.python-version` のCPython 3.14.7と `uv.lock` の解決結果がそのまま再現されます。
+
+```bash
+uv sync --locked
+```
+
+### 検査コマンド
+
+pushする前に全検査を実行します。
+
+```bash
+python3 scripts/check.py
+```
+
+format、lint、型チェック、testをこの順に実行し、途中の段階が失敗しても最後まで進めてから成否をまとめます。一度の実行で全ての問題を確認するためです。段階名を渡すと部分実行できます（例: `python3 scripts/check.py lint typecheck`）。CIも同じscriptを呼びます。
+
+段階を個別に実行する場合は次を使います。`--locked` により、`uv.lock` と `pyproject.toml` が食い違う環境では検査自体が失敗します。
+
+| 目的 | コマンド |
+| --- | --- |
+| format適用 | `uv run --locked ruff format` |
+| format検査 | `uv run --locked ruff format --check` |
+| lint | `uv run --locked ruff check`（`--fix` で自動修正） |
+| 型チェック | `uv run --locked mypy` |
+| test | `uv run --locked pytest` |
+
+依存を追加または更新するときは `uv add`、`uv add --dev`、`uv lock` を使い、更新後の `uv.lock` を同じ変更に含めます。
+
 ## テスト
 
-テスト環境はPhase 1で整備します。整備後は、少なくとも次を変更内容に応じて実行します。
+テストは `uv run --locked pytest` で実行します。変更内容に応じて、少なくとも次を用意します。
 
 - ドメイン規則のunit test
 - 保存と再実行のintegration test
@@ -98,4 +132,4 @@ auto-mergeは使いません。CIの通過と同時にマージされると、�
 
 ローカル開発環境はDocker ComposeでAPI、Worker、選定したDB、artifact storageを起動できるようにします。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。
 
-セットアップ、lint、型チェック、テストの具体的なコマンドは、Phase 1で `pyproject.toml` とDocker環境を作成した時点で追記します。
+Docker Composeの起動、停止、初期化のコマンドは `CP-0012` で追記します。Python側のセットアップと検査コマンドは [開発環境と品質検査](#開発環境と品質検査) を参照してください。
