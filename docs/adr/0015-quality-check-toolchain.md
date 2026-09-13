@@ -54,6 +54,10 @@ setupは`uv sync --locked`とする。個別の検査は`uv run --locked`を通�
 
 このscriptをローカルとCIの共通の入口とする。ただしこの判断の時点でCIにはまだ該当のjobが無い。`CP-0060`で`python3 scripts/check.py`を実行するjobを追加し、[`main`の保護設定](../../CONTRIBUTING.md#main-の保護設定)の必須status checkへ加える。CI側は検査内容を書き写さずこのコマンドを呼ぶだけにして、検査が二重に定義されることを防ぐ。scriptは`uv`と`python3`だけを前提とし、依存をinstallする前でも実行できる。
 
+CI側でruffやmypyをstepとして並べる書き方は採らない。**検査の一覧が`scripts/check.py`とworkflowの2か所に存在すると、片方だけが更新されて検査内容がずれる。**特にworkflow側の更新が漏れた場合、CIはマージの門番であるにもかかわらず、手元より弱い検査で成功し続け、その状態に気づく機会がない。段階を追加するときに直す場所を一つにするため、CIはこのコマンドを呼ぶだけにする。
+
+この選択と引き換えに、Actions UIでは失敗した段階がstep名から判別できず、logを開く必要がある。scriptが最後に段階ごとの成否をまとめて出力すること、および失敗しても後続段階を実行することで補う。段階ごとの所要時間や失敗箇所をUIで区別する必要が出た場合も、workflowへ検査内容を書き写すのではなく、`python3 scripts/check.py <段階名>`を段階ごとのstepにする。
+
 `pyproject.toml`の`[tool.ruff]`、`[tool.mypy]`、`[tool.pytest.ini_options]`を規則と対象範囲の正とする。この文書には規則名を複製しない。
 
 ### 検査対象の範囲
