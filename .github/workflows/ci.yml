@@ -116,6 +116,8 @@ jobs:
 
       # このstepがbuildと起動とhealth checkの成否になる。--waitは全serviceのhealth
       # checkが成功するまで待ち、一つでも失敗または終了すれば非ゼロで終わる。
+      # workerはbuildを宣言しないため、compose版によってはpullを先に試し、logへ
+      # `pull access denied`を1行残す。imageはapi側のbuildで作られるため無害である。
       - name: Build the image and start every service
         run: docker compose up --build --wait --wait-timeout 300
 
