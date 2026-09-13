@@ -51,6 +51,7 @@ ADRの価値は、何を選んだかよりも、なぜその選択に至った�
 | [0019](0019-private-repository.md) | Superseded | repositoryをprivateにし、公開範囲をADR-0012へそろえる |
 | [0020](0020-public-repository-for-branch-protection.md) | Accepted | repositoryをpublicへ戻し、`main`の保護設定を公開範囲の整合より優先する |
 | [0021](0021-ruleset-as-a-file.md) | Accepted | `main`の保護規則をrepository内のfileを正として管理する |
+| [0022](0022-configuration-secret-and-local-data-storage.md) | Accepted | 設定を環境変数、秘密情報を`.env`、ローカルデータを`var/`へ集約する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 

@@ -1,9 +1,16 @@
 """Read the runtime settings that the API and Worker entrypoints need.
 
-Every value arrives as an environment variable so that the same image runs unchanged on
-the owner's machine, under Docker Compose, and in CI. The storage rules for
-configuration files and secrets are decided in ``CP-0014``; this module only reads what
-the process was given and fails loudly when a required value is absent.
+Values that differ between environments - where the database is, which port to bind, where
+artifacts go, and every secret - arrive as environment variables, so the same image runs
+unchanged on the owner's machine, under Docker Compose, and in CI (ADR-0022). Settings that
+describe behaviour rather than placement, such as the per-source fetch rules, are files
+under ``config/`` and do not pass through here.
+
+This module is the only reader of those variables. The API server, the Worker, and the two
+container health checks need the same values, and each of them would otherwise carry its
+own variable name, fallback, parsing, and error handling. Keeping one copy is what stops a
+health check from watching a different port, or a different heartbeat file, than the
+process it reports on.
 """
 
 from __future__ import annotations

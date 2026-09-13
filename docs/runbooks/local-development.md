@@ -234,7 +234,7 @@ artifact storageはDockerのnamed volumeで、working treeには現れない。h
 docker compose cp worker:/srv/card-pulse/artifacts ./var/raw
 ```
 
-取り出した原本はGit管理外の`var/`に置いたままにする。Git、CI artifact、公開backupへ含めない（[ADR-0012](../adr/0012-private-personal-operation.md)）。
+取り出した原本はGit管理外の`var/raw/`に置いたままにする。Git、CI artifact、公開backupへ含めない（[ADR-0012](../adr/0012-private-personal-operation.md)）。`var/`の層ごとの役割は[ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)を正とする。
 
 ## 初期化（破壊的）
 
