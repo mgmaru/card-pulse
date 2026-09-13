@@ -160,7 +160,7 @@ card-pulse/
 │   ├── contract/
 │   └── fixtures/sources/       # CIで使うsource非由来の合成サンプル
 ├── scripts/                    # 品質検査とセットアップ・保守用スクリプト
-└── var/                        # 原本、DB、ログ、レビュー対象。Git管理外
+└── var/                        # 原本、DB、ログ、レビュー対象。Git管理外（ADR-0022）
 ```
 
 ローカル開発にはDocker Composeを使い、API、Worker、DB、artifact storageの接続関係と依存versionを一つの手順で再現します。起動から初期化までの手順は [ローカル開発環境Runbook](docs/runbooks/local-development.md)、構成の判断は [ADR-0016](docs/adr/0016-local-compose-artifact-volume.md)、Dockerが再現できる範囲と限界は [Dockerによる環境再現](docs/learning/docker-environment-reproduction.md) を参照してください。
@@ -169,4 +169,4 @@ Python runtimeとパッケージ管理は [ADR-0013](docs/adr/0013-python-toolch
 
 品質検査はruff、mypy、pytestで行います。選定理由と検査対象の範囲は [ADR-0015](docs/adr/0015-quality-check-toolchain.md)、規則は `pyproject.toml` を正とします。セットアップは `uv sync --locked`、全検査は `python3 scripts/check.py` で、CIも同じコマンドを実行します。段階ごとのコマンドは [開発環境と品質検査](CONTRIBUTING.md#開発環境と品質検査) を参照してください。
 
-現在あるのは責務の境界を表すpackage骨格と、それを起動するだけのローカルDocker環境です。ドメイン実装、DBマイグレーション、取込jobはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1に残る保存規則（`CP-0014`）と実行ログの定義（`CP-0015`）です。
+現在あるのは責務の境界を表すpackage骨格と、それを起動するだけのローカルDocker環境です。ドメイン実装、DBマイグレーション、取込jobはまだありません。設定、秘密情報、ローカルデータの置き場は [ADR-0022](docs/adr/0022-configuration-secret-and-local-data-storage.md) を正とします。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1に残る実行ログの定義（`CP-0015`）です。

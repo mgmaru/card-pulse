@@ -115,6 +115,7 @@ source adapterは外部形式を共通契約へ変換するが、新しい情報
 - DBにはartifact ID、content hash、取得日時、URL、保存参照等のメタデータを持たせる。
 - 本人が管理するfilesystem、volume、またはprivate storage serviceを使う。ローカル開発ではDockerのnamed volume上のfilesystemを使う（[ADR-0016](../adr/0016-local-compose-artifact-volume.md)）。
 - source由来の原本、fixture、抽出値、価格履歴をGit、CI artifact、公開backupへ含めない。
+- hostへ取り出した原本のcopyは`var/raw/`へ置く。設定、秘密情報、ローカルデータの置き場は [ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md) を正とする。
 
 ## 構造化データの分離方針
 
@@ -192,6 +193,7 @@ APIとWorkerは同じapplication imageを別commandで起動し、artifact stora
 - [ADR-0008: カード同定の内部UUID](../adr/0008-opaque-card-identity-id.md)
 - [ADR-0012: 個人用の非公開運用](../adr/0012-private-personal-operation.md)
 - [ADR-0016: ローカル環境のartifact storage](../adr/0016-local-compose-artifact-volume.md)
+- [ADR-0022: 設定・秘密情報・ローカルデータの保存規則](../adr/0022-configuration-secret-and-local-data-storage.md)
 - [DB要件](database-requirements.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)

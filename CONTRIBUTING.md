@@ -86,6 +86,7 @@ python3 scripts/ruleset.py export   # GitHub側の内容でfileを書き直す�
 - 価格観測値は追記型とし、再実行で重複しない識別規則を持たせます。
 - 自動同定の誤結合を避け、曖昧な結果はレビュー対象にします。
 - 認証情報、Cookie、個人情報、取得原本、開発用DB volumeをGitへ追加しません。
+- 設定は環境変数、秘密情報は `.env`、ローカルデータは `var/` へ置きます。層ごとの役割と削除してよい条件は [ADR-0022](docs/adr/0022-configuration-secret-and-local-data-storage.md) を正とします。
 
 ## 開発環境と品質検査
 

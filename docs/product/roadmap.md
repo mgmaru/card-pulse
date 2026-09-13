@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0086`
+> Next task ID: `CP-0087`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -89,7 +89,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Blocker: WSL2を使えるWindows環境が手元に無い。
   - Resume when: WSL2を使えるWindows環境が利用できるようになる。
   - Done when: [ローカル開発環境Runbook](../runbooks/local-development.md)のWSL2の前提と共通手順を実機で実行し、差分があればRunbookを修正したうえで、WSL2の最終確認日を記録している。
-- [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
+- [x] `CP-0014` `done` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
+  - Done when: 設定値の入口、秘密情報の置き場、取得原本とローカルデータの層、削除してよい条件が一つのADRに定まり、規則を破る変更をCIが検出する。
+  - Evidence: [ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)で、設定の入口を環境変数だけとし（`settings.py`が唯一の読み取り口、`.env`はComposeと人が環境変数へ変換するfile）、秘密情報を`.env`ひとつに限り、ローカルデータを`var/`の5層へ集約した。書き込むcomponentがまだ無い`var/db/`と`var/review/`も残し、`CP-0044`とPhase 4のreviewが最初の利用者であることを明記した。`CP-0009`のPoCが残した`var/db-poc/`は2026-09-13時点で35GBあり、`secret/backup.passphrase`が`.env`の外にある唯一の秘密である。測定結果が[PoC結果](../research/database-poc-2026-09.md)に、harnessが`scripts/db_poc/`に凍結されているため削除しても結論は追跡できるが、同じ入力での再確認手段が消えるため保持し、削除してよい3つの条件をADRへ書いた。`tests/unit/test_storage_layout.py`が、`var/`と`config/`に`.gitkeep`以外の追跡fileが無いこと、`.env`と`var/`配下のデータが除外され`.env.example`だけが追跡されること、`var/`の4層が存在すること、runtimeの既定書き込み先が`var/`配下であることを検査する。`var/raw/page.html`を`git add -f`した場合、`var/db/`を移動した場合、`DEFAULT_ARTIFACT_ROOT`を`var/`の外へ変えた場合のそれぞれで対応する検査が失敗することを確認した。参照は[実装上の原則](../../CONTRIBUTING.md#実装上の原則)、[アーキテクチャ概要](../architecture/overview.md#raw-artifact-storage)、[ローカル開発環境Runbook](../runbooks/local-development.md#原本を取り出す)、[README](../../README.md)、`settings.py`のdocstringから同じADRへ向けた。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
   - Evidence: `.github/workflows/ci.yml`でpull requestと`main`へのpushを対象に両方の検査を実行する。
@@ -132,6 +134,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0083`
   - Done when: rulesetのexportがrepositoryの正として置かれ、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の記述がそれと一致している。実設定との乖離をCIが検出し、CIから読めない`bypass_actors`の扱いが決まっている。fileからGitHubへ適用する手動操作があり、CIから自動適用しない理由がADRに記録されている。2026-09-13時点で表に無い`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`の3規則も解消に含める。
   - Evidence: [ADR-0021](../adr/0021-ruleset-as-a-file.md)で`.github/rulesets/main-protection.json`を正とし、GitHub側をそこから派生させる形を決めた。決め手は、規則の変更をfile側から始めればpull requestの差分として必ず現れることで、UIからの直接変更はrepositoryに痕跡を残さない。`scripts/ruleset.py`が`check`、`apply`、`export`を持ち、CIの`Repository ruleset` jobは`check`だけを実行する。適用をCIから行えると`main`を守る規則が`main`経由で緩められるため、`apply`は人が実行する操作に限った。public repositoryのrulesetは未認証で読めることを`cli/cli`など3件で確認済みで、CIに追加のcredentialを置かない。`bypass_actors`は書き込み権限のある読み手にしか返らないためfileへ置かず、`apply`が常に空を送ることで迂回できる主体が生じない形にした。規則を1つ落とした場合と`strict_required_status_checks_policy`を変えた場合の両方で検査が失敗することを確認した。CI job自身を必須status checkへ追加する変更もfileの差分として行い、適用後に4つの必須checkが揃うことを確認した。表に無かった`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`は、[保護設定](../../CONTRIBUTING.md#main-の保護設定)を値の複製から各規則が防ぐことの説明へ書き換えて解消した。
+
+- [ ] `CP-0086` `planned` — ADR管理の機械検査を導入するか再判断する。
+  - Done when: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)が定めた再検討条件（ADR 20件）に達した時点の判断が記録され、validatorを追加するか、見送る理由と次の再検討条件が同じ節へ更新されている。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 

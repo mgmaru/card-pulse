@@ -1,9 +1,10 @@
 """Read the runtime settings that the API and Worker entrypoints need.
 
 Every value arrives as an environment variable so that the same image runs unchanged on
-the owner's machine, under Docker Compose, and in CI. The storage rules for
-configuration files and secrets are decided in ``CP-0014``; this module only reads what
-the process was given and fails loudly when a required value is absent.
+the owner's machine, under Docker Compose, and in CI. ADR-0022 keeps that the only
+entrance: secrets live in the local ``.env`` that Compose turns into these variables, and
+no process reads a configuration file. This module only reads what it was given and fails
+loudly when a required value is absent.
 """
 
 from __future__ import annotations
