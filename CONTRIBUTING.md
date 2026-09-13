@@ -97,7 +97,7 @@ pushする前に全検査を実行します。
 python3 scripts/check.py
 ```
 
-format、lint、型チェック、testをこの順に実行し、途中の段階が失敗しても最後まで進めてから成否をまとめます。一度の実行で全ての問題を確認するためです。段階名を渡すと部分実行できます（例: `python3 scripts/check.py lint typecheck`）。CIも同じscriptを呼びます。
+format、lint、型チェック、testをこの順に実行し、途中の段階が失敗しても最後まで進めてから成否をまとめます。一度の実行で全ての問題を確認するためです。段階名を渡すと部分実行できます（例: `python3 scripts/check.py lint typecheck`）。CIでも同じscriptを呼ぶ予定ですが、そのjobの追加は `CP-0060` で行うため、現時点のCIはこの検査をまだ実行していません。
 
 段階を個別に実行する場合は次を使います。`--locked` により、`uv.lock` と `pyproject.toml` が食い違う環境では検査自体が失敗します。
 
