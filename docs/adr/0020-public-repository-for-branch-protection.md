@@ -51,7 +51,7 @@ repositoryをpublicへ戻し、[ADR-0019](0019-private-repository.md)を置き�
 
 ## Consequences
 
-- `CP-0065`の保護設定が使える状態へ戻る。private化の際に失効しているため、public化の直後に有効かを確認し、失われていれば再作成する。
+- `CP-0065`の保護設定が使える状態へ戻る。private化ではrulesetが削除されず無効化されるだけで、public化により`main protection`がenforcement `active`のまま戻ることを2026-09-13に確認した。再作成は不要だった。
 - GitHub Actionsがpublic repositoryの無制限枠へ戻る。`CP-0061`でCompose検査を追加しても、実行時間を枠に対して気にしなくてよい。
 - [ADR-0012](0012-private-personal-operation.md)との不整合が残る。`CP-0084`が解くまで、ソースコードと代表サンプル13行が公開される。
 - privateを選んで戻した経緯が[ADR-0019](0019-private-repository.md)と本ADRに残る。同じ検討を繰り返さずに済む。
@@ -65,7 +65,7 @@ repositoryをpublicへ戻し、[ADR-0019](0019-private-repository.md)を置き�
 
 ## Validation
 
-- public化の直後にrulesetを確認し、`CP-0065`の保護設定が有効であることを確かめる。失効していれば再作成する。
+- public化の直後にrulesetを確認し、`CP-0065`の保護設定が有効であることを確かめた（2026-09-13）。`bypass_actors`は空で、必須status checkは`Documentation`、`Agent configuration`、`Quality checks`の3つだった。
 - `CP-0084`で[ADR-0012](0012-private-personal-operation.md)との不整合を解消する。
 - 次のいずれかが起きた場合に再評価する。
   - 公開を続けられない事情が生じる。情報源の運営者からの指摘、利用者の追加、公開したくない情報の混入のいずれか。

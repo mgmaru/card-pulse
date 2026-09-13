@@ -121,18 +121,16 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [x] `CP-0080` `done` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
   - Evidence: 棚卸しの結果、repositoryは2026-09-04の作成時からpublicで、ソースコードに加えて`docs/sources/`の12行と[ADR-0009](../adr/0009-pokemon-mvp-sources.md)の1行に実店舗名・カード・買取価格・source内IDを含む代表サンプルが公開されていた。取得原本、source由来fixture、価格履歴はgit履歴を全走査しても追跡されておらず、fork・star・watcherはいずれも0件、releaseとPagesも無かった。`docs/sources/`の追加が2026-09-09〜09-11、ADR-0012が09-12で、規則が後から入ったことによる食い違いだった。[ADR-0019](../adr/0019-private-repository.md)でrepositoryをprivateにする判断を記録し、2026-09-13に切り替えた。代表サンプルは第三者提供に当たらなくなるため削除せず、取得原本・抽出履歴・価格履歴とは区別する線引きを同ADRへ書いた。CIの`Documentation` jobへ`github.event.repository.private`を検査するstepを追加し、publicへ戻した状態のpull requestとpushが失敗するようにした。必須status checkに指定済みのjobへ置いたのは、新しいjobだと必須指定を追加するまで失敗を無視してマージできるためである。なおprivate化の直後に、GitHub Freeではprivate repositoryのprotected branchesが使えず`CP-0065`の保護設定が失効することが判明し、`CP-0083`で[ADR-0020](../adr/0020-public-repository-for-branch-protection.md)へ置き換えてpublicへ戻した。棚卸しの結果と[ADR-0012](../adr/0012-private-personal-operation.md)との不整合の内容は有効で、解消は`CP-0084`が引き継ぐ。
   - Done when: 現在公開されている成果物の棚卸しと、[ADR-0012](../adr/0012-private-personal-operation.md)のどの記述が影響を受けるかが整理され、ソースコードの公開を許容するかrepositoryをprivateにするかが新しいADRで決まっている。許容する場合は、公開するものと公開しないものの境界を同じADRへ記載する。
-- [ ] `CP-0083` `in-progress` `owner` — `main`の保護設定を回復するため、repositoryの公開設定を見直す。
+- [x] `CP-0083` `done` — `main`の保護設定を回復するため、repositoryの公開設定を見直す。
   - Depends on: `CP-0080`
-  - Owner action: repositoryをpublicへ戻す。`gh repo edit mgmaru/card-pulse --visibility public --accept-visibility-change-consequences`またはGitHubの設定画面から行う。
-  - Resume: [ADR-0020](../adr/0020-public-repository-for-branch-protection.md)の作成、[ADR-0019](../adr/0019-private-repository.md)のSuperseded化、CIのvisibility検査の削除は済んでいる。public化の後に`gh api repos/mgmaru/card-pulse/rulesets`で保護設定を確認し、失効していれば[保護設定](../../CONTRIBUTING.md#main-の保護設定)のとおり再作成する。
-  - Done when: repositoryがpublicで、`CP-0065`が定めた`main`の保護設定が有効であることを確認している。
+  - Evidence: private化の直後にrulesetとbranch protectionのAPIが403を返し、GitHub Freeではprivate repositoryのprotected branchesが使えないことが分かった。`CP-0065`のpull request必須、status check必須、最新`main`必須が失効していた。[ADR-0020](../adr/0020-public-repository-for-branch-protection.md)で[ADR-0019](../adr/0019-private-repository.md)を置換してpublicへ戻し、CIのvisibility検査を削除した。public化後に`main protection`がenforcement `active`のまま戻ることを確認し、rulesetは削除されず無効化されていただけだったため再作成は不要だった。`bypass_actors`は空、必須status checkは`Documentation`、`Agent configuration`、`Quality checks`の3つ、merge方法はmerge commitのみで、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の表と一致した。[ADR-0012](../adr/0012-private-personal-operation.md)との不整合は未解決のまま残し、`CP-0084`が引き継ぐ。
 - [ ] `CP-0084` `planned` `owner` — [ADR-0012](../adr/0012-private-personal-operation.md)が定める非公開の範囲と、publicなrepositoryの不整合を解消する。
   - Depends on: `CP-0083`
   - Owner action: 公開してよい対象の範囲を判断する。
   - Done when: 公開してよいものと公開しないものの境界、`docs/sources/`と[ADR-0009](../adr/0009-pokemon-mvp-sources.md)に残る代表サンプルの扱い、LICENSEの有無が決まり、[ADR-0012](../adr/0012-private-personal-operation.md)との関係を明示した新しいADRに記録されている。
 - [ ] `CP-0085` `planned` — `main`のrulesetをrepositoryから可視化し、実設定との乖離を検出できるようにする。
   - Depends on: `CP-0083`
-  - Done when: rulesetのexportがrepositoryに置かれ、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の表との対応が読み取れる。実設定との乖離を決定的に検出する手段があり、bypass actorの扱いと、admin権限を持つtokenをsecretとして置くかどうかの判断がADRに記録されている。committedなJSONをCIから自動適用しない理由も同じADRへ書く。
+  - Done when: rulesetのexportがrepositoryの正として置かれ、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の記述がそれと一致している。実設定との乖離をCIが検出し、CIから読めない`bypass_actors`の扱いが決まっている。fileからGitHubへ適用する手動操作があり、CIから自動適用しない理由がADRに記録されている。2026-09-13時点で表に無い`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`の3規則も解消に含める。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
