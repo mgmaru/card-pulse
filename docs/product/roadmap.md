@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0077`
+> Next task ID: `CP-0078`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -65,7 +65,10 @@
   - Evidence: [ADR-0014](../adr/0014-postgresql-self-hosted.md)で、`CP-0009`の実測を根拠にself-hostのPostgreSQL 18を採用し、[ADR-0004](../adr/0004-server-database-selection.md)が残したDB製品とhosting providerの未決事項を解消した。決定を[MVP定義](mvp.md)、[プロダクト構想](vision.md)、[アーキテクチャ概要](../architecture/overview.md)、[DB要件](../architecture/database-requirements.md)、`README.md`へ反映した。
 - [x] `CP-0011` `done` — `pyproject.toml`、lockfile、パッケージの最小構成を作る。
   - Evidence: [ADR-0013](../adr/0013-python-toolchain-and-migrations.md)に従い、`pyproject.toml`へ`requires-python = ">=3.14,<3.15"`とuvの`required-version`を、`.python-version`へCPython 3.14.7を固定した。`src/card_pulse/`をsrc layoutの単一installable packageとし、[アーキテクチャ概要](../architecture/overview.md#コード構成)の責務境界に対応する12 packageを作成した。生成した`uv.lock`で`uv sync --locked`、全subpackageのimport、wheel buildが成功することを確認した。runtime依存は空とし、開発依存と品質検査コマンドは`CP-0013`、Alembic環境は対象schemaが決まる時点へ残した。
-- [ ] `CP-0012` `planned` — Docker ComposeでAPI、Worker、選定DB、artifact storageを起動するローカル環境を作る。
+- [ ] `CP-0012` `paused` — Docker ComposeでAPI、Worker、選定DB、artifact storageを起動するローカル環境を作る。
+  - Depends on: `CP-0077`
+  - Pause reason: 起動確認に使うcontainer runtimeが決まっていない。`CP-0077`で選定する。
+  - Resume: `compose.yaml`、`Dockerfile`、API・Workerのentrypoint、構成の不変条件test、`docs/adr/0016-local-compose-artifact-volume.md`、`docs/runbooks/local-development.md`をブランチ`cp-0012-docker-compose-local-environment`へ作成済みで、品質検査4段階と文書リンク検査は通っている。残るのは起動確認だけ。`CP-0077`で採用したruntimeを導入し、Runbookの手順でbuild・起動・health check・障害分離・初期化を実行して、Runbookの前提条件と最終確認日を埋める。
 - [x] `CP-0013` `done` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
   - Evidence: [ADR-0015](../adr/0015-quality-check-toolchain.md)でruff 0.16.7、mypy 2.3.1、pytest 9.1.1を採用し、`pyproject.toml`の`[dependency-groups]`と各tool設定へ反映して`uv.lock`を更新した。setupは`uv sync --locked`、全検査は`python3 scripts/check.py`とし、各段階を`uv run --locked`経由で実行する。`.venv`を削除した状態から`uv sync --locked`を実行し、format、lint、型チェック、testの4段階が成功すること、型不整合を含むfileを置くと3段階が失敗して終了codeが1になること、`uv.lock`と`pyproject.toml`が食い違うと`--locked`が検査前に失敗することを確認した。コマンドは[開発環境と品質検査](../../CONTRIBUTING.md#開発環境と品質検査)を正とし、CIへの追加は`CP-0060`で行う。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
@@ -76,6 +79,9 @@
   - Depends on: `CP-0013`
   - Done when: 対応するPython versionとlockfileを使い、ローカルと同じ品質検査がpull requestで成功する。
   - Evidence: `.github/workflows/ci.yml`の`Quality checks` jobが`python3 scripts/check.py`を実行し、検査内容をworkflowへ複製しない。uvのversionは`pyproject.toml`の`required-version`、CPythonのversionは`.python-version`からuv自身が解決する。pull request #4の実行logでuv 0.12.13とCPython 3.14.7が使われ、format、lint、型チェック、testの4段階と13件のtestが10秒で成功したことを確認した。`main`のrulesetの必須status checkへ`Quality checks`を追加し、[保護設定](../../CONTRIBUTING.md#main-の保護設定)へ反映した。
+- [x] `CP-0077` `done` — ローカル開発で使うcontainer runtimeを選定し、ADRに残す。
+  - Done when: ライセンス条件、CI runnerとの差、導入方法を比較したうえで採用するruntimeが決まり、repositoryの成果物がruntime固有の機能へ依存しない範囲と再選定の条件がADRに記録されている。Runbookの前提条件への反映は`CP-0012`で行う。
+  - Evidence: [ADR-0017](../adr/0017-colima-container-runtime.md)でColima、Docker Desktop、Rancher Desktop、OrbStackを2026-09-13時点のライセンス条件、入手方法、GUIの要否で比較し、Colimaを採用した。4候補ともLinux VM上の同じDocker Engineで技術差が出ないため、ADR-0012が判断を避けた個人利用・商用の区分へ依存しないMITのColimaを選んだ。`compose.yaml`をCompose Specificationの範囲に限る、imageをmulti-archのdigestで固定する、手順を`docker compose`で表す、CIはrunnerのDocker Engineを使うという4点で、repositoryの成果物をruntimeへ依存させない範囲を定めた。Homebrewからcolima 0.10.3、docker 29.8.0、docker-compose 5.5.1、lima 2.2.0を導入し、`~/.docker/config.json`の`cliPluginsExtraDirs`を設定して`docker compose version`が5.5.1を返すことを確認した。
 - [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`
   - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。

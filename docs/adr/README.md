@@ -45,6 +45,7 @@ ADRの価値は、何を選んだかよりも、なぜその選択に至った�
 | [0013](0013-python-toolchain-and-migrations.md) | Accepted | CPython 3.14、uv、Alembicを開発基盤に採用する |
 | [0014](0014-postgresql-self-hosted.md) | Accepted | 構造化データのDBにPostgreSQL 18を採用し、self-hostで運用する |
 | [0015](0015-quality-check-toolchain.md) | Accepted | 品質検査にruff、mypy、pytestを採用し、一つのコマンドで実行する |
+| [0017](0017-colima-container-runtime.md) | Accepted | ローカル開発のcontainer runtimeにColimaを採用する |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 
