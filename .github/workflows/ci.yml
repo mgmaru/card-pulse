@@ -30,6 +30,26 @@ jobs:
       - name: Validate roadmap
         run: python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py
 
+  quality-checks:
+    name: Quality checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          # uvのversionはpyproject.tomlのrequired-version、CPythonのversionは
+          # .python-versionが正。uv自身がそれらを読むため、ここでは重複して固定しない。
+          version-file: pyproject.toml
+
+      # ローカルと同じ入口を呼ぶ。検査内容はpyproject.tomlとscripts/check.pyが正。
+      - name: Run format, lint, type check, and tests
+        run: python3 scripts/check.py
+
   agent-configuration:
     name: Agent configuration
     runs-on: ubuntu-24.04

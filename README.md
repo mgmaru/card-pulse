@@ -163,6 +163,6 @@ card-pulse/
 
 Python runtimeとパッケージ管理は [ADR-0013](docs/adr/0013-python-toolchain-and-migrations.md) に従い、CPython 3.14.7 と uv 0.12系へ固定します。`src/card_pulse/` 全体を1つのinstallable packageとし、API、Worker、migration、運用CLIは同じpackageの別entrypointにします。依存関係は `pyproject.toml` で宣言し、解決結果は `uv.lock` を正とします。
 
-品質検査はruff、mypy、pytestで行います。選定理由と検査対象の範囲は [ADR-0015](docs/adr/0015-quality-check-toolchain.md)、規則は `pyproject.toml` を正とします。セットアップは `uv sync --locked`、全検査は `python3 scripts/check.py` です。段階ごとのコマンドは [開発環境と品質検査](CONTRIBUTING.md#開発環境と品質検査) を参照してください。
+品質検査はruff、mypy、pytestで行います。選定理由と検査対象の範囲は [ADR-0015](docs/adr/0015-quality-check-toolchain.md)、規則は `pyproject.toml` を正とします。セットアップは `uv sync --locked`、全検査は `python3 scripts/check.py` で、CIも同じコマンドを実行します。段階ごとのコマンドは [開発環境と品質検査](CONTRIBUTING.md#開発環境と品質検査) を参照してください。
 
 現在あるのは責務の境界を表すpackage骨格だけで、ドメイン実装、Docker環境、DBマイグレーションはまだありません。次の作業は [ロードマップ](docs/product/roadmap.md) のPhase 1に残るローカルDocker環境（`CP-0012`）です。
