@@ -1,10 +1,10 @@
 # ADR-0019: repositoryをprivateにし、公開範囲をADR-0012へそろえる
 
-- 状態: Accepted
+- 状態: Superseded
 - 日付: 2026-09-13
 - 決定者: プロジェクトオーナー
 - 置換するADR: なし
-- 置換されたADR: なし
+- 置換されたADR: [ADR-0020](0020-public-repository-for-branch-protection.md)
 
 ## Context
 
