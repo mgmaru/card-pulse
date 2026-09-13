@@ -2,7 +2,7 @@
 
 > 状態: Accepted for MVP
 >
-> 最終更新: 2026-09-12
+> 最終更新: 2026-09-13
 
 ## システム境界
 
@@ -113,7 +113,7 @@ source adapterは外部形式を共通契約へ変換するが、新しい情報
 
 - HTML、JSON、CSV、PDF、画像等の原本本体を保存する。
 - DBにはartifact ID、content hash、取得日時、URL、保存参照等のメタデータを持たせる。
-- 本人が管理するfilesystem、volume、またはprivate storage serviceを使う。
+- 本人が管理するfilesystem、volume、またはprivate storage serviceを使う。ローカル開発ではDockerのnamed volume上のfilesystemを使う（[ADR-0016](../adr/0016-local-compose-artifact-volume.md)）。
 - source由来の原本、fixture、抽出値、価格履歴をGit、CI artifact、公開backupへ含めない。
 
 ## 構造化データの分離方針
@@ -161,6 +161,8 @@ flowchart LR
 
 Dockerでapplication runtime、依存version、network、volume、環境変数の形をそろえる。本人の端末外に公開する構成はMVPで扱わない。host間のprivate network、認証、実network latency、backup、障害復旧は必要になった時点で別に検証する。詳しくは [Dockerによる環境再現](../learning/docker-environment-reproduction.md) を参照する。
 
+APIとWorkerは同じapplication imageを別commandで起動し、artifact storageはWorkerだけがmountするnamed volumeとする。hostへ公開するportはloopbackへbindしたAPI portとDB portだけで、health checkはprocessのlivenessだけを表し、依存の状態はAPIの`/health/dependencies`とWorkerのheartbeatが報告する。構成の理由は [ADR-0016](../adr/0016-local-compose-artifact-volume.md)、起動から初期化までの手順は [ローカル開発環境Runbook](../runbooks/local-development.md) を正とする。
+
 ## 障害と変更の分離
 
 - sourceごとに取込実行、設定、再試行、エラーを分ける。
@@ -189,6 +191,7 @@ Dockerでapplication runtime、依存version、network、volume、環境変数�
 - [ADR-0007: 処理段階による構造化データの分離](../adr/0007-layered-ingestion-data.md)
 - [ADR-0008: カード同定の内部UUID](../adr/0008-opaque-card-identity-id.md)
 - [ADR-0012: 個人用の非公開運用](../adr/0012-private-personal-operation.md)
+- [ADR-0016: ローカル環境のartifact storage](../adr/0016-local-compose-artifact-volume.md)
 - [DB要件](database-requirements.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)
