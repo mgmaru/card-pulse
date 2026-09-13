@@ -20,13 +20,37 @@
 
 ## Decision
 
-### 設定の入口は環境変数だけにする
+### 設定を2種類に分け、環境ごとに変わる値だけを環境変数で渡す
 
-application processが読む設定は環境変数に限る。`settings.py`が唯一の読み取り口で、必須値が欠けていれば起動時に失敗する。`.env`はComposeと人が環境変数へ変換するためのfileであり、processが直接読むfileではない。
+設定と呼んでいるものには、性質の違う2種類が混ざっている。
 
-**設定fileを読む経路を足すと、同じ値が環境変数とfileの二か所から来る状態が生まれ、どちらが勝つかをcomponentごとに決めることになる。** 開発機、Compose、CI、将来の配置で同じimageを動かす以上、値の出所を追うときに読む場所は`.env`と`compose.yaml`の二つに留める。
+| 種類 | 例 | 渡し方 |
+| --- | --- | --- |
+| 環境ごとに変わる値 | DBの接続先、待ち受けport、原本の保存先、秘密 | 環境変数 |
+| 動作そのものを決める値 | source別のUser-Agent、取得間隔、再試行回数（`CP-0025`） | `config/`のfile |
 
-source固有の実行設定（`CP-0025`が定めるUser-Agent、間隔、再試行など）は`config/`へ置く。これはrepositoryが持つ非秘密の値で、entrypointが読んでadapterへ渡す。秘密は置かない。
+前者は開発機、Compose、CI、将来の配置でそれぞれ違う。Gitへ入れられない値も含む。これを環境変数で渡す。`.env`はComposeと人がそれを環境変数へ変換するためのfileであり、container内には存在しない。processが見るのは渡された環境変数だけである。
+
+**環境ごとに変わる値まで設定fileから読めるようにすると、同じ値が環境変数とfileの二か所から来て、どちらが勝つかをcomponentごとに決めることになる。** 値の出所を追うときに読む場所は`.env`と`compose.yaml`の二つに留める。
+
+後者はどの環境でも同じ値で、変更の履歴を残したい。こちらは`config/`へfileとして置き、Gitで管理する。entrypointが読んでadapterへ渡す。秘密は置かない。
+
+### 環境変数を読むコードは`settings.py`だけにする
+
+同じ値を必要とする場所は、すでに4つある。
+
+| 場所 | 読む値の例 |
+| --- | --- |
+| API本体（`api/server.py`） | bind先のhostとport、DSN |
+| APIのhealth check（`api/healthcheck.py`） | 叩き先のport |
+| Worker本体（`worker/service.py`） | DSN、artifact root、heartbeatのpathと周期 |
+| Workerのhealth check（`worker/healthcheck.py`） | heartbeatのpath、古さの上限 |
+
+環境変数は文字列で、渡されないこともある。そのため読む側は毎回、変数名、渡されなかったときの既定、文字列から値への変換、異常値の扱いという4つを決める必要がある。各所で`os.environ`を読むと、この4つが読む場所の数だけできる。
+
+**解釈する場所を一つにすると、同じ値について複数のprocessが食い違うことが構造上できなくなる。** health checkとそれが検査するprocessは別のprocessでありながら同じportとpathに合意している必要があり、この合意を規約ではなく同じ関数の呼び出しで保証する。合わせて、必須値の欠落を起動時にまとめて失敗として出せること、testが環境変数ではなくMappingを渡して検証できることが得られる。
+
+`settings.py`自身は`os.environ`を読む。規則は「`os.environ`を使わない」ではなく「読む場所を増やさない」である。domainとapplicationはprocessの起動方法を知らないため、この層から環境変数を読まない。
 
 ### 秘密情報は`.env`だけに置く
 
@@ -69,13 +93,13 @@ Compose環境における取得原本の正はnamed volume `artifacts`であり�
 
 - 新しいfileの置き場を決めるときに読む文書がこのADR一つになる。個別の物理配置は引き続き[ADR-0016](0016-local-compose-artifact-volume.md)、公開してよい範囲は[ADR-0012](0012-private-personal-operation.md)が正である。
 - `tests/unit/test_storage_layout.py`が、`var/`と`config/`に`.gitkeep`以外の追跡fileが無いこと、`.env`と`var/`配下のデータが`.gitignore`で除外されること、runtimeの既定書き込み先が`var/`配下であることを検査する。CIの`Quality checks`が毎回実行する。
-- 秘密を増やすときは`.env`へ値を、`.env.example`へ変数名だけを足す。設定fileやsecret storeを足す構成が必要になった場合は、このADRを置き換える。
+- 秘密を増やすときは`.env`へ値を、`.env.example`へ変数名だけを足す。環境ごとに変わる値をfileから読む構成や、secret storeを足す構成が必要になった場合は、このADRを置き換える。
 - `var/db-poc/`の35GBは当面残る。削除は上の条件に当たった時点で、本人が実行する。
 - `config/`は`CP-0025`まで空のまま残る。
 
 ## Alternatives considered
 
-- **設定fileを読めるようにする（YAML、TOML）**: 値をまとめて見通せるが、環境変数との優先順位をcomponentごとに持つことになり、値の出所を追う場所が増える。非秘密のsource設定は`config/`で足りる。
+- **環境ごとに変わる値も設定fileから読む（YAML、TOML）**: 値をまとめて見通せるが、環境変数との優先順位をcomponentごとに持つことになり、値の出所を追う場所が増える。container内にはそのfileが無いため、image側へ複製する経路も要る。
 - **秘密をOS keychainやsecret managerへ置く**: 漏えい時の影響は下がるが、読む主体が本人の開発機とCI runnerの両方になり、経路が`.env`一つより増える。利用者が本人だけでrepositoryもprivate networkも本人の管理下にある現状では、増えた経路の分だけ見落としが増える。
 - **`var/db/`と`var/review/`を削除する**: 空の層が減るが、次に使う工程（`CP-0044`、Phase 4のreview）が決まっているため、そのときに置き場の判断をやり直すことになる。
 - **PoCデータを削除する**: 35GB戻るが、結論に疑いが生じたときの再確認手段が消える。容量が不足していない時点で選ぶ理由がない。

@@ -2,7 +2,7 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-13
+> 最終更新: 2026-09-14
 >
 > Next task ID: `CP-0087`
 
@@ -91,7 +91,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Done when: [ローカル開発環境Runbook](../runbooks/local-development.md)のWSL2の前提と共通手順を実機で実行し、差分があればRunbookを修正したうえで、WSL2の最終確認日を記録している。
 - [x] `CP-0014` `done` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
   - Done when: 設定値の入口、秘密情報の置き場、取得原本とローカルデータの層、削除してよい条件が一つのADRに定まり、規則を破る変更をCIが検出する。
-  - Evidence: [ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)で、設定の入口を環境変数だけとし（`settings.py`が唯一の読み取り口、`.env`はComposeと人が環境変数へ変換するfile）、秘密情報を`.env`ひとつに限り、ローカルデータを`var/`の5層へ集約した。書き込むcomponentがまだ無い`var/db/`と`var/review/`も残し、`CP-0044`とPhase 4のreviewが最初の利用者であることを明記した。`CP-0009`のPoCが残した`var/db-poc/`は2026-09-13時点で35GBあり、`secret/backup.passphrase`が`.env`の外にある唯一の秘密である。測定結果が[PoC結果](../research/database-poc-2026-09.md)に、harnessが`scripts/db_poc/`に凍結されているため削除しても結論は追跡できるが、同じ入力での再確認手段が消えるため保持し、削除してよい3つの条件をADRへ書いた。`tests/unit/test_storage_layout.py`が、`var/`と`config/`に`.gitkeep`以外の追跡fileが無いこと、`.env`と`var/`配下のデータが除外され`.env.example`だけが追跡されること、`var/`の4層が存在すること、runtimeの既定書き込み先が`var/`配下であることを検査する。`var/raw/page.html`を`git add -f`した場合、`var/db/`を移動した場合、`DEFAULT_ARTIFACT_ROOT`を`var/`の外へ変えた場合のそれぞれで対応する検査が失敗することを確認した。参照は[実装上の原則](../../CONTRIBUTING.md#実装上の原則)、[アーキテクチャ概要](../architecture/overview.md#raw-artifact-storage)、[ローカル開発環境Runbook](../runbooks/local-development.md#原本を取り出す)、[README](../../README.md)、`settings.py`のdocstringから同じADRへ向けた。
+  - Evidence: [ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)で、設定を「環境ごとに変わる値」と「動作そのものを決める値」へ分け、前者を環境変数で渡して`settings.py`を唯一の読み取り口とし（`.env`はComposeと人がそれを環境変数へ変換するfileで、container内には無い）、後者を`config/`のfileとした。読み取り口を一つにするのは、health checkとそれが検査するprocessが別processでありながら同じportとpathへ合意する必要があるためで、この合意を規約ではなく同じ関数の呼び出しで保証する。秘密情報は`.env`ひとつに限り、ローカルデータを`var/`の5層へ集約した。書き込むcomponentがまだ無い`var/db/`と`var/review/`も残し、`CP-0044`とPhase 4のreviewが最初の利用者であることを明記した。`CP-0009`のPoCが残した`var/db-poc/`は2026-09-13時点で35GBあり、`secret/backup.passphrase`が`.env`の外にある唯一の秘密である。測定結果が[PoC結果](../research/database-poc-2026-09.md)に、harnessが`scripts/db_poc/`に凍結されているため削除しても結論は追跡できるが、同じ入力での再確認手段が消えるため保持し、削除してよい3つの条件をADRへ書いた。`tests/unit/test_storage_layout.py`が、`var/`と`config/`に`.gitkeep`以外の追跡fileが無いこと、`.env`と`var/`配下のデータが除外され`.env.example`だけが追跡されること、`var/`の4層が存在すること、runtimeの既定書き込み先が`var/`配下であることを検査する。`var/raw/page.html`を`git add -f`した場合、`var/db/`を移動した場合、`DEFAULT_ARTIFACT_ROOT`を`var/`の外へ変えた場合のそれぞれで対応する検査が失敗することを確認した。参照は[実装上の原則](../../CONTRIBUTING.md#実装上の原則)、[アーキテクチャ概要](../architecture/overview.md#raw-artifact-storage)、[ローカル開発環境Runbook](../runbooks/local-development.md#原本を取り出す)、[README](../../README.md)、`settings.py`のdocstringから同じADRへ向けた。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
   - Evidence: `.github/workflows/ci.yml`でpull requestと`main`へのpushを対象に両方の検査を実行する。
