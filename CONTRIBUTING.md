@@ -112,6 +112,19 @@ format、lint、型チェック、testをこの順に実行し、途中の段階
 
 依存を追加または更新するときは `uv add`、`uv add --dev`、`uv lock` を使い、更新後の `uv.lock` を同じ変更に含めます。
 
+## ローカル実行環境
+
+Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動します。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。構成の判断は [ADR-0006](docs/adr/0006-docker-compose-local-development.md) と [ADR-0016](docs/adr/0016-local-compose-artifact-volume.md) を正とします。
+
+```bash
+cp .env.example .env     # 初回のみ。passwordを生成して記入する
+docker compose up --build -d
+docker compose ps        # db、api、worker が healthy になる
+docker compose down      # volumeは残す。--volumes を付けると全データを削除する
+```
+
+起動確認、障害分離の試し方、原本の取り出し、初期化、よくある失敗は [ローカル開発環境Runbook](docs/runbooks/local-development.md) を正とします。上の品質検査はcontainerを使わずhostで実行し、DBを使うintegration testだけがCompose環境へ接続します。
+
 ## テスト
 
 テストは `uv run --locked pytest` で実行します。変更内容に応じて、少なくとも次を用意します。
@@ -130,7 +143,3 @@ format、lint、型チェック、testをこの順に実行し、途中の段階
 - 必要な文書、ADR、schema、migrationが更新されている。
 - ログやfixtureに秘密情報が含まれていない。
 - 集計結果から観測値と原本メタデータまで追跡できる。
-
-ローカル開発環境はDocker ComposeでAPI、Worker、選定したDB、artifact storageを起動できるようにします。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。
-
-Docker Composeの起動、停止、初期化のコマンドは `CP-0012` で追記します。Python側のセットアップと検査コマンドは [開発環境と品質検査](#開発環境と品質検査) を参照してください。

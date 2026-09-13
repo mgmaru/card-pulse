@@ -1,0 +1,88 @@
+# ローカル開発のservice topology（ADR-0006）。API、Worker、選定DB、artifact storageを
+# 一つの手順で起動する。本番のmanaged service、IAM、負荷分散、backupは再現しない。
+#
+# 公開範囲: 外から到達できるのはhostのloopbackへbindしたportだけで、service間の通信は
+# Composeが作る内部networkに閉じる（ADR-0012）。
+
+name: card-pulse
+
+services:
+  # 選定DB（ADR-0014）。OS variantとdigestを固定する。
+  db:
+    image: postgres:18.6-trixie@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
+    environment:
+      POSTGRES_DB: card_pulse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${CARD_PULSE_POSTGRES_PASSWORD:?copy .env.example to .env first}
+      # 初期化scriptがruntime roleを作るために読む。
+      CARD_PULSE_API_DB_PASSWORD: ${CARD_PULSE_API_DB_PASSWORD:?copy .env.example to .env first}
+      CARD_PULSE_WORKER_DB_PASSWORD: ${CARD_PULSE_WORKER_DB_PASSWORD:?copy .env.example to .env first}
+    volumes:
+      # PostgreSQL 18のofficial imageはVOLUMEを/var/lib/postgresqlへ移し、
+      # PGDATAを/var/lib/postgresql/18/dockerに置く。
+      - db-data:/var/lib/postgresql
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # host側のmigration、psql、integration testのためにloopbackだけへ公開する。
+      - "127.0.0.1:${CARD_PULSE_DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=postgres --dbname=card_pulse --quiet"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # APIとWorkerは同一のimageを別commandで起動する。buildの宣言をapiだけに置くのは、
+  # 両serviceへ同じimage名でbuildを書くと、builderによっては同じtagへの並行buildが
+  # 競合し、重複排除される場合でも両者が別layerになり得るため。
+  # 単独で`docker compose up worker`する場合は、先に`docker compose build`が要る。
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: card-pulse-app:dev
+    init: true
+    command: ["python", "-m", "card_pulse.entrypoints.api"]
+    environment:
+      # container内では0.0.0.0へbindする。既定のloopback bindはhostで直接起動した場合に
+      # 効き、containerでは公開portの側で到達範囲を絞る。
+      CARD_PULSE_API_HOST: 0.0.0.0
+      CARD_PULSE_API_PORT: "8000"
+      CARD_PULSE_DATABASE_URL: postgresql://card_pulse_api:${CARD_PULSE_API_DB_PASSWORD:?copy .env.example to .env first}@db:5432/card_pulse
+    ports:
+      - "127.0.0.1:${CARD_PULSE_API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "card_pulse.entrypoints.api.healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  worker:
+    image: card-pulse-app:dev
+    init: true
+    command: ["python", "-m", "card_pulse.entrypoints.worker"]
+    environment:
+      CARD_PULSE_DATABASE_URL: postgresql://card_pulse_worker:${CARD_PULSE_WORKER_DB_PASSWORD:?copy .env.example to .env first}@db:5432/card_pulse
+      CARD_PULSE_ARTIFACT_ROOT: /srv/card-pulse/artifacts
+      CARD_PULSE_WORKER_HEARTBEAT_PATH: /srv/card-pulse/state/worker-heartbeat.json
+      CARD_PULSE_WORKER_INTERVAL_SECONDS: "30"
+    volumes:
+      # artifact storage。APIは原本を読まないため、このvolumeをmountしない。
+      - artifacts:/srv/card-pulse/artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "card_pulse.entrypoints.worker.healthcheck"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  db-data:
+  artifacts:

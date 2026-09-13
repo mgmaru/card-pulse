@@ -1,12 +1,19 @@
 # Runbooks
 
-Runbookは、開発者または運用者が同じ手順を再現する必要がある作業を記載する。現在は実行環境とCollectorが未実装のため、個別Runbookはまだない。
+Runbookは、開発者または運用者が同じ手順を再現する必要がある作業を記載する。
+
+## 一覧
+
+| Runbook | 内容 |
+| --- | --- |
+| [ローカル開発環境](local-development.md) | Docker ComposeでAPI、Worker、DB、artifact storageを起動、確認、停止、初期化する |
 
 ## 作成する条件
 
+Collectorとreview、backupの手順は対応する実装が入った時点で作る。
+
 | Runbook | 作成する時点 | 最低限含める内容 |
 | --- | --- | --- |
-| `local-development.md` | Phase 1 | Docker要件、build、起動、設定、migration、test、lint、型チェック、停止、初期化 |
 | `ingestion.md` | 最初のCollector実装時 | 通常実行、dry run、再実行、結果確認、終了code |
 | `source-failure.md` | Phase 3の`CP-0075`。定期取得開始前 | 実行欠落と失敗段階の判定、診断証拠の確認、再試行可否、source停止、正常原本との比較、parser修正、保存済み原本の再解析、dry run、手動再開、最終成功日時と鮮度の確認 |
 | `review-queue.md` | review機能実装時 | 確認方法、確定・却下・保留、監査履歴 |
