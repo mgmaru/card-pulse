@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0080`
+> Next task ID: `CP-0082`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -77,6 +77,11 @@
 - [ ] `CP-0079` `planned` — 新しいマシンで開発環境を再現する手順を定義する。
   - Depends on: `CP-0078`
   - Done when: repositoryのcheckoutから開発と取込を始められる状態までの前提と手順が一つのsource of truthに定まり、前提の充足を機械的に確認できるか、確認を自動化しない理由が記録されている。Docker環境に限らず、git設定、Python toolchain、`.env`、エージェント設定を対象に含める。
+- [ ] `CP-0081` `blocked` — WSL2の実機でローカル開発環境Runbookを通し、最終確認日を記録する。
+  - Depends on: `CP-0078`
+  - Blocker: WSL2を使えるWindows環境が手元に無い。
+  - Resume when: WSL2を使えるWindows環境が利用できるようになる。
+  - Done when: [ローカル開発環境Runbook](../runbooks/local-development.md)のWSL2の前提と共通手順を実機で実行し、差分があればRunbookを修正したうえで、WSL2の最終確認日を記録している。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
@@ -90,7 +95,7 @@
   - Evidence: [ADR-0017](../adr/0017-colima-container-runtime.md)でColima、Docker Desktop、Rancher Desktop、OrbStackを2026-09-13時点のライセンス条件、入手方法、GUIの要否で比較し、Colimaを採用した。4候補ともLinux VM上の同じDocker Engineで技術差が出ないため、ADR-0012が判断を避けた個人利用・商用の区分へ依存しないMITのColimaを選んだ。`compose.yaml`をCompose Specificationの範囲に限る、imageをmulti-archのdigestで固定する、手順を`docker compose`で表す、CIはrunnerのDocker Engineを使うという4点で、repositoryの成果物をruntimeへ依存させない範囲を定めた。Homebrewからcolima 0.10.3、docker 29.8.0、docker-compose 5.5.1、lima 2.2.0を導入し、`~/.docker/config.json`の`cliPluginsExtraDirs`を設定して`docker compose version`が5.5.1を返すことを確認した。
 - [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`
-  - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。
+  - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。同jobを`main`のrulesetの必須status checkへ追加し、[保護設定](../../CONTRIBUTING.md#main-の保護設定)へ反映している。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
@@ -101,6 +106,9 @@
 
 - [x] `CP-0076` `done` — ADRに判断理由を明示し、決め手となる一文を強調する書き方を定める。
   - Evidence: [判断理由の書き方](../adr/README.md#判断理由の書き方)を規則の正とし、`Decision`で理由の中心となる一文を太字にすること、強調を一つに絞ること、理由を比較・制約・回避したい失敗として書くことを定めた。[ADR template](../adr/template.md)、[`write-project-docs`](../../.agents/skills/write-project-docs/SKILL.md)、`AGENTS.md`、[CONTRIBUTING.md](../../CONTRIBUTING.md#文書の扱い)から同じ規則を参照する。既存ADRは[ADR README](../adr/README.md#状態)の規則どおり書き換えず、[ADR-0015](../adr/0015-quality-check-toolchain.md)の`Decision`を手本として示した。
+
+- [ ] `CP-0080` `planned` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
+  - Done when: 現在公開されている成果物の棚卸しと、[ADR-0012](../adr/0012-private-personal-operation.md)のどの記述が影響を受けるかが整理され、ソースコードの公開を許容するかrepositoryをprivateにするかが新しいADRで決まっている。許容する場合は、公開するものと公開しないものの境界を同じADRへ記載する。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
