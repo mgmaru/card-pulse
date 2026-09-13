@@ -1,0 +1,12 @@
+# build contextには、image作成に必要なfileだけを渡す。既定ですべて除外し、必要なものを
+# 明示的に戻す。取得原本、秘密情報、ローカルのvirtual environmentがimageへ入らない。
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!README.md
+!src
+
+# 再度除外する: source tree内の生成物
+src/**/__pycache__
+src/**/*.py[cod]

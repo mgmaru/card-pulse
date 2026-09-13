@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "TCGカードの価格観測値を収集・保存・正規化・照会する個人用データ基盤"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
-dependencies = []
+# driverはADR-0014で決定済み。binary extraがlibpqを同梱するため、container imageと
+# 開発機の双方でlibpqの別installが要らない。
+dependencies = [
+    "psycopg[binary]>=3.3.5,<4",
+]
 
 # 個人用の非公開アプリ（ADR-0012）のため、package indexへは公開しない。
 classifiers = ["Private :: Do Not Upload"]
@@ -22,11 +26,14 @@ required-version = ">=0.12.13,<0.13"
 
 # 品質検査toolはADR-0015で決定する。lockで正確なversionを固定するため、
 # ここでは互換性を壊す更新だけを除外する範囲を宣言する。
+# PyYAMLはCompose設定の不変条件をtestから読むためだけに使う。
 [dependency-groups]
 dev = [
     "mypy>=2.3.1,<3",
     "pytest>=9.1.1,<10",
+    "pyyaml>=6.0.3,<7",
     "ruff>=0.16.7,<0.17",
+    "types-pyyaml>=6.0.12,<7",
 ]
 
 [tool.ruff]
