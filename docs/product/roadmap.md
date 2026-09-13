@@ -118,8 +118,8 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [x] `CP-0082` `done` — オーナー本人が操作するタスクをロードマップ上で識別できるようにする。
   - Evidence: task行の状態の後ろへ任意の`owner`markerを置き、`Owner action`metadataでリポジトリの外で何をするかを書く形式にした。`blocked`が`Blocker`と`Resume when`を必須にするのと同じ関係で、`owner`は`Owner action`を必須とし、markerの無い`Owner action`も検査で弾く。`validate_roadmap.py --owner`が未完了のownerタスクを一覧する。markerだけの行、markerの無い`Owner action`、両方揃った行の3通りを検査にかけ、前2つが失敗し3つ目が通ることを確認した。判定基準は「リポジトリの外でオーナー本人が操作しないと完了しない」こととし、`CP-0061`、`CP-0080`、`CP-0081`、`CP-0038`、`CP-0040`、`CP-0042`の6件へ付けた。完了済みタスクへ遡って付けない方針を[Roadmap task format](../../.agents/skills/maintain-roadmap/references/task-format.md)へ記載した。
 
-- [ ] `CP-0080` `planned` `owner` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
-  - Owner action: 整理した選択肢のどちらを採るか決める。private にする場合はGitHub の repository 設定を変更する。
+- [x] `CP-0080` `done` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
+  - Evidence: 棚卸しの結果、repositoryは2026-09-04の作成時からpublicで、ソースコードに加えて`docs/sources/`の12行と[ADR-0009](../adr/0009-pokemon-mvp-sources.md)の1行に実店舗名・カード・買取価格・source内IDを含む代表サンプルが公開されていた。取得原本、source由来fixture、価格履歴はgit履歴を全走査しても追跡されておらず、fork・star・watcherはいずれも0件、releaseとPagesも無かった。`docs/sources/`の追加が2026-09-09〜09-11、ADR-0012が09-12で、規則が後から入ったことによる食い違いだった。[ADR-0019](../adr/0019-private-repository.md)でrepositoryをprivateにする判断を記録し、2026-09-13に切り替えた。代表サンプルは第三者提供に当たらなくなるため削除せず、取得原本・抽出履歴・価格履歴とは区別する線引きを同ADRへ書いた。CIの`Documentation` jobへ`github.event.repository.private`を検査するstepを追加し、publicへ戻した状態のpull requestとpushが失敗するようにした。必須status checkに指定済みのjobへ置いたのは、新しいjobだと必須指定を追加するまで失敗を無視してマージできるためである。
   - Done when: 現在公開されている成果物の棚卸しと、[ADR-0012](../adr/0012-private-personal-operation.md)のどの記述が影響を受けるかが整理され、ソースコードの公開を許容するかrepositoryをprivateにするかが新しいADRで決まっている。許容する場合は、公開するものと公開しないものの境界を同じADRへ記載する。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。

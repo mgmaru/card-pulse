@@ -24,6 +24,18 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
+      # ADR-0019。必須status checkに入っているjobへ置き、公開へ戻した変更が
+      # 検査を外す差分として現れるようにする。
+      - name: Check the repository stays private
+        env:
+          IS_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          if [ "$IS_PRIVATE" != "true" ]; then
+            echo "ADR-0019: this repository must stay private (visibility reported as private=$IS_PRIVATE)." >&2
+            echo "Publishing requires a new ADR that replaces ADR-0012 and ADR-0019." >&2
+            exit 1
+          fi
+
       - name: Check Markdown links
         run: python3 .agents/skills/check-doc-links/scripts/check_doc_links.py
 
