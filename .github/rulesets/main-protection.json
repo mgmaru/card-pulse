@@ -49,6 +49,9 @@
           },
           {
             "context": "Repository ruleset"
+          },
+          {
+            "context": "Compose environment"
           }
         ]
       }

@@ -7,7 +7,8 @@ string, as described in the local development Runbook:
         uv run --locked pytest tests/integration
 
 Without that variable the module is skipped, so the suite stays runnable offline and in
-CI, where no database service exists yet.
+the CI job that runs it, which has no database of its own. ``Compose environment`` starts
+one, but runs no test against it; connecting the suite to a database in CI is ``CP-0062``.
 """
 
 import os

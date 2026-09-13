@@ -134,6 +134,8 @@ docker compose down      # volumeは残す。--volumes を付けると全デー�
 
 起動確認、障害分離の試し方、原本の取り出し、初期化、よくある失敗は [ローカル開発環境Runbook](docs/runbooks/local-development.md) を正とします。上の品質検査はcontainerを使わずhostで実行し、DBを使うintegration testだけがCompose環境へ接続します。
 
+CIの `Compose environment` jobも同じ手順を実行します。空のrunner上でimageをbuildし、3つのserviceがhealthyになり、APIとWorkerが依存をhealthyと報告するところまでを毎回確認します。
+
 ## テスト
 
 テストは `uv run --locked pytest` で実行します。変更内容に応じて、少なくとも次を用意します。
