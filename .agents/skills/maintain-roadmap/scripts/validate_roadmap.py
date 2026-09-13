@@ -12,11 +12,12 @@ from pathlib import Path
 
 TASK_LINE_RE = re.compile(
     r"^- \[(?P<checked>[ xX])\] `(?P<id>CP-(?P<number>\d{4}))` "
-    r"`(?P<status>[a-z-]+)` — (?P<title>\S.*)$"
+    r"`(?P<status>[a-z-]+)`(?P<owner> `owner`)? — (?P<title>\S.*)$"
 )
 CHECKBOX_RE = re.compile(r"^- \[[ xX]\]")
 METADATA_RE = re.compile(
-    r"^  - (?P<label>Depends on|Done when|Resume|Pause reason|Blocker|Resume when|Evidence|Cancellation reason):\s*(?P<value>.*)$"
+    r"^  - (?P<label>Depends on|Done when|Resume|Pause reason|Blocker|Resume when"
+    r"|Owner action|Evidence|Cancellation reason):\s*(?P<value>.*)$"
 )
 TASK_ID_RE = re.compile(r"CP-\d{4}")
 NEXT_ID_RE = re.compile(r"^> Next task ID: `CP-(?P<number>\d{4})`$")
@@ -44,6 +45,7 @@ class Task:
     number: int
     status: str
     checked: bool
+    owner: bool
     title: str
     line: int
     metadata: dict[str, list[str]] = field(default_factory=dict)
@@ -91,6 +93,7 @@ def parse_roadmap(path: Path) -> tuple[list[Task], int | None, list[str]]:
                 number=int(task_match.group("number")),
                 status=task_match.group("status"),
                 checked=task_match.group("checked").lower() == "x",
+                owner=task_match.group("owner") is not None,
                 title=task_match.group("title"),
                 line=line_number,
             )
@@ -186,6 +189,16 @@ def validate(tasks: list[Task], next_number: int | None, path: Path) -> list[str
                 f"{path}:{task.line}: status `{task.status}` requires `{label}` metadata"
             )
 
+        if task.owner and "Owner action" not in present_labels:
+            errors.append(
+                f"{path}:{task.line}: `owner` requires `Owner action` metadata naming "
+                "what the project owner does outside the repository"
+            )
+        if not task.owner and "Owner action" in present_labels:
+            errors.append(
+                f"{path}:{task.line}: `Owner action` requires the `owner` marker on the task line"
+            )
+
         if len(task.metadata.get("Depends on", [])) > 1:
             errors.append(
                 f"{path}:{task.line}: combine dependencies into one `Depends on` entry"
@@ -233,6 +246,11 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Print the next ID after validating the roadmap.",
     )
+    parser.add_argument(
+        "--owner",
+        action="store_true",
+        help="List the open tasks that need the project owner, with their owner action.",
+    )
     return parser.parse_args()
 
 
@@ -255,6 +273,15 @@ def main() -> int:
     if arguments.next_id:
         assert next_number is not None
         print(f"CP-{next_number:04d}")
+    elif arguments.owner:
+        pending = [
+            task for task in tasks if task.owner and task.status not in COMPLETED_STATUSES
+        ]
+        for task in pending:
+            print(f"{task.identifier} [{task.status}] {task.title}")
+            for action in task.metadata.get("Owner action", []):
+                print(f"  {action}")
+        print(f"{len(pending)} open task(s) need the project owner.")
     else:
         print(f"OK: {len(tasks)} roadmap task(s) validated.")
     return 0
