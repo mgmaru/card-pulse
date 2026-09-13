@@ -128,9 +128,10 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0083`
   - Owner action: 公開してよい対象の範囲を判断する。
   - Done when: 公開してよいものと公開しないものの境界、`docs/sources/`と[ADR-0009](../adr/0009-pokemon-mvp-sources.md)に残る代表サンプルの扱い、LICENSEの有無が決まり、[ADR-0012](../adr/0012-private-personal-operation.md)との関係を明示した新しいADRに記録されている。
-- [ ] `CP-0085` `planned` — `main`のrulesetをrepositoryから可視化し、実設定との乖離を検出できるようにする。
+- [x] `CP-0085` `done` — `main`のrulesetをrepositoryから可視化し、実設定との乖離を検出できるようにする。
   - Depends on: `CP-0083`
   - Done when: rulesetのexportがrepositoryの正として置かれ、[保護設定](../../CONTRIBUTING.md#main-の保護設定)の記述がそれと一致している。実設定との乖離をCIが検出し、CIから読めない`bypass_actors`の扱いが決まっている。fileからGitHubへ適用する手動操作があり、CIから自動適用しない理由がADRに記録されている。2026-09-13時点で表に無い`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`の3規則も解消に含める。
+  - Evidence: [ADR-0021](../adr/0021-ruleset-as-a-file.md)で`.github/rulesets/main-protection.json`を正とし、GitHub側をそこから派生させる形を決めた。決め手は、規則の変更をfile側から始めればpull requestの差分として必ず現れることで、UIからの直接変更はrepositoryに痕跡を残さない。`scripts/ruleset.py`が`check`、`apply`、`export`を持ち、CIの`Repository ruleset` jobは`check`だけを実行する。適用をCIから行えると`main`を守る規則が`main`経由で緩められるため、`apply`は人が実行する操作に限った。public repositoryのrulesetは未認証で読めることを`cli/cli`など3件で確認済みで、CIに追加のcredentialを置かない。`bypass_actors`は書き込み権限のある読み手にしか返らないためfileへ置かず、`apply`が常に空を送ることで迂回できる主体が生じない形にした。規則を1つ落とした場合と`strict_required_status_checks_policy`を変えた場合の両方で検査が失敗することを確認した。CI job自身を必須status checkへ追加する変更もfileの差分として行い、適用後に4つの必須checkが揃うことを確認した。表に無かった`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`は、[保護設定](../../CONTRIBUTING.md#main-の保護設定)を値の複製から各規則が防ぐことの説明へ書き換えて解消した。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
