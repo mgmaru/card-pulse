@@ -29,6 +29,29 @@ Use exactly one of these statuses:
 | `done` | `[x]` | Outcome verified and evidence recorded |
 | `cancelled` | `[x]` | Will not be completed; reason recorded |
 
+## Owner tasks
+
+Some tasks cannot be finished from inside the repository. Changing a GitHub setting,
+providing hardware, running a trial for weeks, and spending money are all outside what a
+pull request can deliver. Mark those with `owner` after the status:
+
+```markdown
+- [ ] `CP-0061` `planned` `owner` — Add the Compose checks to GitHub Actions.
+  - Owner action: Add the job to the required status checks on `main`.
+```
+
+`owner` requires `Owner action`, and `Owner action` is rejected without `owner`, the same
+way `blocked` requires `Blocker` and `Resume when`. Write only the part the owner performs,
+not the whole task: most owner tasks are mixed, with the repository work done in a pull
+request and one step left that only the owner can take.
+
+Apply the marker by what the work needs, not by who happens to do it. A decision the owner
+makes by approving a pull request is not an owner task; a decision that also requires
+changing an account setting is. Do not add the marker to tasks that are already `done` or
+`cancelled`: their `Evidence` records what happened, and a marker there only adds noise.
+
+List the open owner tasks with `validate_roadmap.py --owner`.
+
 ## Optional and conditional metadata
 
 Indent metadata by two spaces beneath its task.
@@ -47,6 +70,7 @@ Use these exact labels so the validator can interpret them:
 - `Pause reason`: why an in-progress task was interrupted.
 - `Blocker`: the condition preventing progress.
 - `Resume when`: the observable condition that clears a blocker.
+- `Owner action`: what the project owner does outside the repository. Requires `owner`.
 - `Evidence`: test output, document, commit, or other verification for a done task.
 - `Cancellation reason`: why a task will not be completed.
 
@@ -71,6 +95,7 @@ When changing status:
 - `in-progress` requires `Resume` so another session can continue the work.
 - `paused` requires both `Pause reason` and `Resume`.
 - `blocked` requires both `Blocker` and `Resume when`.
+- `owner` requires `Owner action`, independently of the status.
 - `done` requires `Evidence` and must not depend on unfinished tasks.
 - `cancelled` requires `Cancellation reason`.
 

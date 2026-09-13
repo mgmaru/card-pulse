@@ -29,6 +29,7 @@ Maintain `docs/product/roadmap.md` as the durable, high-level execution plan.
 - Never reuse an ID from a completed, cancelled, or removed task. Preserve cancelled work in the roadmap unless the user requests archival.
 - Do not mark a task `done` without observable evidence. Record that evidence under the task.
 - Keep `paused` distinct from `blocked`. A pause is an intentional interruption; a block requires a condition outside the task to change.
+- Mark a task `owner` when it cannot be finished from inside the repository, and name the step in `Owner action`. Judge by what the work needs, not by who happens to do it.
 - Record enough state to resume without reconstructing prior work from conversation history.
 - Keep the roadmap at phase and independently reviewable outcome level. Put long investigation logs in a linked issue or task document when one exists.
 - Preserve the user's priorities. Do not reorder unrelated work merely to make numeric IDs sequential.
@@ -41,4 +42,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py
 
 # Print the next never-used roadmap ID.
 python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --next-id
+
+# List the open tasks that need the project owner.
+python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 ```

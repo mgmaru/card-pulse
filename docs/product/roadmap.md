@@ -4,11 +4,17 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0082`
+> Next task ID: `CP-0083`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
 各タスクはリポジトリ全体で一意なIDと状態を持つ。移動や分割、割り込み時の更新方法は [Roadmap task format](../../.agents/skills/maintain-roadmap/references/task-format.md) に従う。
+
+`owner` が付いたタスクは、リポジトリの外でプロジェクトオーナー本人が操作しないと完了しない。何をするかは `Owner action` に書く。未完了のものだけを一覧するには次を実行する。
+
+```bash
+python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
+```
 
 ## Phase 0 — 対象と情報源を決める
 
@@ -77,7 +83,8 @@
 - [ ] `CP-0079` `planned` — 新しいマシンで開発環境を再現する手順を定義する。
   - Depends on: `CP-0078`
   - Done when: repositoryのcheckoutから開発と取込を始められる状態までの前提と手順が一つのsource of truthに定まり、前提の充足を機械的に確認できるか、確認を自動化しない理由が記録されている。Docker環境に限らず、git設定、Python toolchain、`.env`、エージェント設定を対象に含める。
-- [ ] `CP-0081` `blocked` — WSL2の実機でローカル開発環境Runbookを通し、最終確認日を記録する。
+- [ ] `CP-0081` `blocked` `owner` — WSL2の実機でローカル開発環境Runbookを通し、最終確認日を記録する。
+  - Owner action: WSL2 を使える Windows 環境を用意し、Runbook の手順を実行する。
   - Depends on: `CP-0078`
   - Blocker: WSL2を使えるWindows環境が手元に無い。
   - Resume when: WSL2を使えるWindows環境が利用できるようになる。
@@ -93,7 +100,8 @@
 - [x] `CP-0077` `done` — ローカル開発で使うcontainer runtimeを選定し、ADRに残す。
   - Done when: ライセンス条件、CI runnerとの差、導入方法を比較したうえで採用するruntimeが決まり、repositoryの成果物がruntime固有の機能へ依存しない範囲と再選定の条件がADRに記録されている。Runbookの前提条件への反映は`CP-0012`で行う。
   - Evidence: [ADR-0017](../adr/0017-colima-container-runtime.md)でColima、Docker Desktop、Rancher Desktop、OrbStackを2026-09-13時点のライセンス条件、入手方法、GUIの要否で比較し、Colimaを採用した。4候補ともLinux VM上の同じDocker Engineで技術差が出ないため、ADR-0012が判断を避けた個人利用・商用の区分へ依存しないMITのColimaを選んだ。`compose.yaml`をCompose Specificationの範囲に限る、imageをmulti-archのdigestで固定する、手順を`docker compose`で表す、CIはrunnerのDocker Engineを使うという4点で、repositoryの成果物をruntimeへ依存させない範囲を定めた。Homebrewからcolima 0.10.3、docker 29.8.0、docker-compose 5.5.1、lima 2.2.0を導入し、`~/.docker/config.json`の`cliPluginsExtraDirs`を設定して`docker compose version`が5.5.1を返すことを確認した。
-- [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
+- [ ] `CP-0061` `planned` `owner` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
+  - Owner action: CI へ job を追加した後、`main` の ruleset の必須 status check へその job を追加する。
   - Depends on: `CP-0012`
   - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。同jobを`main`のrulesetの必須status checkへ追加し、[保護設定](../../CONTRIBUTING.md#main-の保護設定)へ反映している。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
@@ -107,7 +115,11 @@
 - [x] `CP-0076` `done` — ADRに判断理由を明示し、決め手となる一文を強調する書き方を定める。
   - Evidence: [判断理由の書き方](../adr/README.md#判断理由の書き方)を規則の正とし、`Decision`で理由の中心となる一文を太字にすること、強調を一つに絞ること、理由を比較・制約・回避したい失敗として書くことを定めた。[ADR template](../adr/template.md)、[`write-project-docs`](../../.agents/skills/write-project-docs/SKILL.md)、`AGENTS.md`、[CONTRIBUTING.md](../../CONTRIBUTING.md#文書の扱い)から同じ規則を参照する。既存ADRは[ADR README](../adr/README.md#状態)の規則どおり書き換えず、[ADR-0015](../adr/0015-quality-check-toolchain.md)の`Decision`を手本として示した。
 
-- [ ] `CP-0080` `planned` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
+- [x] `CP-0082` `done` — オーナー本人が操作するタスクをロードマップ上で識別できるようにする。
+  - Evidence: task行の状態の後ろへ任意の`owner`markerを置き、`Owner action`metadataでリポジトリの外で何をするかを書く形式にした。`blocked`が`Blocker`と`Resume when`を必須にするのと同じ関係で、`owner`は`Owner action`を必須とし、markerの無い`Owner action`も検査で弾く。`validate_roadmap.py --owner`が未完了のownerタスクを一覧する。markerだけの行、markerの無い`Owner action`、両方揃った行の3通りを検査にかけ、前2つが失敗し3つ目が通ることを確認した。判定基準は「リポジトリの外でオーナー本人が操作しないと完了しない」こととし、`CP-0061`、`CP-0080`、`CP-0081`、`CP-0038`、`CP-0040`、`CP-0042`の6件へ付けた。完了済みタスクへ遡って付けない方針を[Roadmap task format](../../.agents/skills/maintain-roadmap/references/task-format.md)へ記載した。
+
+- [ ] `CP-0080` `planned` `owner` — repositoryの公開範囲を[ADR-0012](../adr/0012-private-personal-operation.md)と整合させる。
+  - Owner action: 整理した選択肢のどちらを採るか決める。private にする場合はGitHub の repository 設定を変更する。
   - Done when: 現在公開されている成果物の棚卸しと、[ADR-0012](../adr/0012-private-personal-operation.md)のどの記述が影響を受けるかが整理され、ソースコードの公開を許容するかrepositoryをprivateにするかが新しいADRで決まっている。許容する場合は、公開するものと公開しないものの境界を同じADRへ記載する。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
@@ -176,12 +188,15 @@
 
 ## Phase 5 — 試験運用して価値を判定する
 
-- [ ] `CP-0038` `planned` — 低頻度の増分取得を2〜4週間実行する。
+- [ ] `CP-0038` `planned` `owner` — 低頻度の増分取得を2〜4週間実行する。
+  - Owner action: 2〜4週間、実際に定期取得を運用する。
   - Depends on: `CP-0075`
 - [ ] `CP-0039` `planned` — 成功率、重複率、未同定率、障害分類、検知・復旧時間、誤検知、レビュー時間、parser変更、保守時間を記録する。
-- [ ] `CP-0040` `planned` — 仕入れまたは売却判断に役立った事例を [Experiments](../experiments/README.md) に記録する。
+- [ ] `CP-0040` `planned` `owner` — 仕入れまたは売却判断に役立った事例を [Experiments](../experiments/README.md) に記録する。
+  - Owner action: 実際の仕入れ・売却の判断で使い、役立った事例と外れた事例を提供する。
 - [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されず、sourceの停止理由と最終成功日時を確認できることを検証する。
-- [ ] `CP-0042` `planned` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
+- [ ] `CP-0042` `planned` `owner` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
+  - Owner action: 配置先の端末と private network を用意する。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序をRunbookにする。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
 - [ ] `CP-0045` `planned` — 継続、対象変更、中止の判断をADRに残す。
