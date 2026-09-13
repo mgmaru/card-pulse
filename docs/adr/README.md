@@ -46,7 +46,8 @@ ADRの価値は、何を選んだかよりも、なぜその選択に至った�
 | [0014](0014-postgresql-self-hosted.md) | Accepted | 構造化データのDBにPostgreSQL 18を採用し、self-hostで運用する |
 | [0015](0015-quality-check-toolchain.md) | Accepted | 品質検査にruff、mypy、pytestを採用し、一つのコマンドで実行する |
 | [0016](0016-local-compose-artifact-volume.md) | Accepted | ローカル環境のartifact storageをDocker volume上のfilesystemにする |
-| [0017](0017-colima-container-runtime.md) | Accepted | ローカル開発のcontainer runtimeにColimaを採用する |
+| [0017](0017-colima-container-runtime.md) | Superseded | ローカル開発のcontainer runtimeにColimaを採用する |
+| [0018](0018-per-os-container-runtime.md) | Accepted | container runtimeを選定基準で決め、OSごとに実装を選ぶ |
 
 新しいADRは [template.md](template.md) を複製し、4桁の連番と短いslugを付ける。
 

@@ -1,10 +1,10 @@
 # ADR-0017: ローカル開発のcontainer runtimeにColimaを採用する
 
-- 状態: Accepted
+- 状態: Superseded
 - 日付: 2026-09-13
 - 決定者: プロジェクトオーナー
 - 置換するADR: なし
-- 置換されたADR: なし
+- 置換されたADR: [ADR-0018](0018-per-os-container-runtime.md)
 
 ## Context
 
