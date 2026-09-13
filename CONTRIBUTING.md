@@ -51,7 +51,7 @@ auto-mergeは使いません。CIの通過と同時にマージされると、�
 | Require branches to be up to date | ON | 古い `main` の上での検査結果でマージさせない |
 | Require linear history | OFF | マージコミットを禁止しないため |
 
-必須にするstatus checkは、CIに存在するjobだけを指定します。品質検査とCompose検査のjobは `CP-0060` と `CP-0061` で追加され、その時点で必須指定へ加えます。
+必須にするstatus checkは、CIに存在するjobだけを指定します。現在は `Documentation`、`Agent configuration`、`Quality checks` の3つです。Compose検査のjobは `CP-0061` で追加し、その時点で必須指定へ加えます。
 
 ### ブランチ名の機械検査
 
@@ -97,7 +97,7 @@ pushする前に全検査を実行します。
 python3 scripts/check.py
 ```
 
-format、lint、型チェック、testをこの順に実行し、途中の段階が失敗しても最後まで進めてから成否をまとめます。一度の実行で全ての問題を確認するためです。段階名を渡すと部分実行できます（例: `python3 scripts/check.py lint typecheck`）。CIでも同じscriptを呼ぶ予定ですが、そのjobの追加は `CP-0060` で行うため、現時点のCIはこの検査をまだ実行していません。
+format、lint、型チェック、testをこの順に実行し、途中の段階が失敗しても最後まで進めてから成否をまとめます。一度の実行で全ての問題を確認するためです。段階名を渡すと部分実行できます（例: `python3 scripts/check.py lint typecheck`）。CIの `Quality checks` jobも同じscriptを呼びます。検査内容をworkflowへ書き写さないため、ローカルとCIで検査がずれません。
 
 段階を個別に実行する場合は次を使います。`--locked` により、`uv.lock` と `pyproject.toml` が食い違う環境では検査自体が失敗します。
 

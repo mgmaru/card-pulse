@@ -72,9 +72,10 @@
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
   - Evidence: `.github/workflows/ci.yml`でpull requestと`main`へのpushを対象に両方の検査を実行する。
-- [ ] `CP-0060` `planned` — format、lint、型チェック、unit testをGitHub Actionsへ追加する。
+- [x] `CP-0060` `done` — format、lint、型チェック、unit testをGitHub Actionsへ追加する。
   - Depends on: `CP-0013`
   - Done when: 対応するPython versionとlockfileを使い、ローカルと同じ品質検査がpull requestで成功する。
+  - Evidence: `.github/workflows/ci.yml`の`Quality checks` jobが`python3 scripts/check.py`を実行し、検査内容をworkflowへ複製しない。uvのversionは`pyproject.toml`の`required-version`、CPythonのversionは`.python-version`からuv自身が解決する。pull request #4の実行logでuv 0.12.13とCPython 3.14.7が使われ、format、lint、型チェック、testの4段階と13件のtestが10秒で成功したことを確認した。`main`のrulesetの必須status checkへ`Quality checks`を追加し、[保護設定](../../CONTRIBUTING.md#main-の保護設定)へ反映した。
 - [ ] `CP-0061` `planned` — Docker Composeの設定、image build、service health checkをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`
   - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。
