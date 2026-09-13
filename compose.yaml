@@ -32,6 +32,10 @@ services:
       retries: 12
       start_period: 30s
 
+  # APIとWorkerは同一のimageを別commandで起動する。buildの宣言をapiだけに置くのは、
+  # 両serviceへ同じimage名でbuildを書くと、builderによっては同じtagへの並行buildが
+  # 競合し、重複排除される場合でも両者が別layerになり得るため。
+  # 単独で`docker compose up worker`する場合は、先に`docker compose build`が要る。
   api:
     build:
       context: .
@@ -58,9 +62,6 @@ services:
       start_period: 20s
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: card-pulse-app:dev
     init: true
     command: ["python", "-m", "card_pulse.entrypoints.worker"]

@@ -40,11 +40,24 @@ def test_the_topology_has_one_service_per_runtime_role(services: dict[str, Any])
 
 
 def test_pulled_images_are_pinned_by_digest(services: dict[str, Any]) -> None:
-    """ADR-0014 requires the OS variant and the digest, not a moving tag."""
+    """ADR-0014 requires the OS variant and the digest, not a moving tag.
+
+    Images built from this repository are exempt: they are produced by a service in the
+    same file, so there is no registry tag that could move underneath them.
+    """
+    built_here = {service["image"] for service in services.values() if "build" in service}
+
     for name, service in services.items():
-        if "build" in service:
+        image = service["image"]
+        if image in built_here:
             continue
-        assert "@sha256:" in service["image"], f"{name} does not pin an image digest"
+        assert "@sha256:" in image, f"{name} does not pin an image digest"
+
+
+def test_the_application_image_is_built_once_and_shared(services: dict[str, Any]) -> None:
+    """API and Worker must run the same bytes, not two builds of the same Dockerfile."""
+    assert services["api"]["image"] == services["worker"]["image"]
+    assert [name for name, service in services.items() if "build" in service] == ["api"]
 
 
 def test_base_images_are_pinned_by_digest() -> None:

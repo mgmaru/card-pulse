@@ -41,9 +41,10 @@ ENV PATH=/opt/card-pulse/bin:$PATH \
     CARD_PULSE_WORKER_HEARTBEAT_PATH=/srv/card-pulse/state/worker-heartbeat.json
 
 # 非rootで実行する。artifact用volumeはこのmount pointの所有者を引き継ぐため、
-# 先にdirectoryを作ってからvolumeを割り当てる。
-RUN groupadd --system --gid 10001 card-pulse \
- && useradd --system --uid 10001 --gid card-pulse \
+# 先にdirectoryを作ってからvolumeを割り当てる。uidを固定するのは、image再buildの前後で
+# 既存volumeの所有者と一致させるため。system uidの範囲（1000未満）は使わない。
+RUN groupadd --gid 10001 card-pulse \
+ && useradd --uid 10001 --gid card-pulse --no-create-home \
         --home-dir /srv/card-pulse --shell /usr/sbin/nologin card-pulse \
  && mkdir -p /srv/card-pulse/artifacts /srv/card-pulse/state \
  && chown -R card-pulse:card-pulse /srv/card-pulse

@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> 最終確認日: 未実施。`CP-0012`の作業環境にDockerが無く、この手順をまだ通しで実行していない。Docker導入後の初回実行、または`CP-0061`のCI実行のうち早い方で確認日を記録する。
+> 最終確認日: 2026-09-13。Colima 0.10.3、Docker 29.8.0、Docker Compose 5.5.1、macOS（Apple Silicon）で、設定から初期化までを通しで実行した。
 
 Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動し、停止・初期化するまでの手順を示す。構成の判断は[ADR-0006](../adr/0006-docker-compose-local-development.md)と[ADR-0016](../adr/0016-local-compose-artifact-volume.md)、Dockerで再現できる範囲は[Dockerによる環境再現](../learning/docker-environment-reproduction.md)を参照する。
 
@@ -16,13 +16,36 @@ Python側のsetupと品質検査はcontainerを使わない。コマンドは[�
 
 ## 前提
 
-- Docker EngineまたはDocker Desktop、OrbStack等のcompatible runtime。Compose v2が必要。
+container runtimeは[ADR-0017](../adr/0017-colima-container-runtime.md)でColimaを採用している。初回だけ次を実行する。
 
-  ```bash
-  docker compose version
-  ```
+```bash
+brew install colima docker docker-compose
+```
 
-  `Docker Compose version v2.x` 以上が表示されること。
+`docker-compose`はDockerのpluginとして呼び出すため、`~/.docker/config.json`へplugin pathを登録する。既存の設定がある場合はkeyを追加する。
+
+```json
+{
+  "cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]
+}
+```
+
+開発を始めるたびにVMを起動する。停止中は`docker`コマンドがdaemonへ接続できずに失敗する。
+
+```bash
+colima start
+colima status
+```
+
+`colima is running using macOS Virtualization.Framework` が表示されること。既定の割り当ては2 CPU、2GiB memory、100GiB diskで、この構成のbuildと起動はこの範囲に収まる。増やす場合は`colima start --cpu 4 --memory 8`のように指定し、変更した理由をこの節へ追記する。
+
+versionを確認する。
+
+```bash
+docker --version && docker compose version
+```
+
+`Docker version 29.8.0`、`Docker Compose version 5.5.1` を確認済み。Compose v2の機能だけを使うため、これ以降のversionでも手順は変わらない。
 
 - imageのpullとbuildにInternet接続が必要。起動後の運用には不要。
 - 使用するhost portは既定で`127.0.0.1:5432`と`127.0.0.1:8000`。他のPostgreSQLが5432を使っている場合は`.env`で変更する。
@@ -34,6 +57,12 @@ Python側のsetupと品質検査はcontainerを使わない。コマンドは[�
 ```bash
 cp .env.example .env
 openssl rand -hex 32   # 3回実行し、.env の3つのpasswordへ貼る
+```
+
+`.env`はすべての`docker compose`コマンドで読まれる。値が欠けていると、起動だけでなく`docker compose ps`や`docker compose exec`も次のように失敗する。
+
+```text
+error while interpolating services.db.environment.POSTGRES_PASSWORD: required variable CARD_PULSE_POSTGRES_PASSWORD is missing a value: copy .env.example to .env first
 ```
 
 `.env.example`に無い変数をcompose.yamlが読まないことは`tests/unit/test_local_environment.py`が検査する。
@@ -83,7 +112,7 @@ docker compose logs worker
 runtime roleがsuperuserでないことを確認する。
 
 ```bash
-docker compose exec db psql --username=postgres --dbname=card_pulse --command='\du card_pulse_*'
+docker compose exec db psql --username=postgres --dbname=card_pulse --command='\du card_pulse*'
 ```
 
 `card_pulse_api`と`card_pulse_worker`が、属性列に何も持たない状態で表示される。
@@ -97,6 +126,8 @@ docker compose up --build -d
 ```
 
 依存を変えていなければ、再buildはprojectのinstall layerだけをやり直す。
+
+APIとWorkerは`card-pulse-app:dev`という一つのimageを共有し、buildの宣言は`api` serviceだけが持つ。`worker`だけを単独で起動する場合は、先に`docker compose build`でimageを作る。作られていないとComposeがregistryからpullしようとして失敗する。
 
 ## テスト
 
@@ -190,3 +221,5 @@ docker compose up --build -d
 | `api`が起動直後に終了する | `CARD_PULSE_DATABASE_URL`が不正。ログに変数名が出る | `.env`のpasswordにURLで意味を持つ文字が入っていないか確認する。`openssl rand -hex`の出力を使う |
 | `/health/dependencies`が`password authentication failed`を返す | `.env`のpasswordを変更したが、既存volumeのroleは初期化時のまま | roleを`ALTER ROLE`で更新するか、「[初期化](#初期化破壊的)」を行う |
 | buildが`required-version`で失敗する | Dockerfileが固定するuvのimage tagと`pyproject.toml`の`required-version`が食い違っている | どちらかを揃える。versionの正は`pyproject.toml` |
+| `docker`コマンドがdaemonへ接続できない | ColimaのVMが停止している | `colima start` を実行する |
+| `docker compose` が unknown command になる | plugin pathが未登録 | 「[前提](#前提)」の`cliPluginsExtraDirs`を設定する |
