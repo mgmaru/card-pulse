@@ -1,0 +1,14 @@
+# 作業ツリーの改行を、OSに関わらずLFにそろえる（ADR-0018）。
+#
+# Git for Windowsの既定は`core.autocrlf=true`で、cloneした作業ツリーがCRLFになる。
+# `compose.yaml`がbind mountする`docker/postgres/initdb/`のscriptがCRLFになると、
+# PostgreSQLの初期化が`set: pipefail: invalid option name`で中断し、runtime roleが
+# 作られないままdbが起動しない。
+* text=auto eol=lf
+
+# 改行変換をしてはいけないもの。text=autoの判定に任せず明示する。
+*.gz binary
+*.jpg binary
+*.pdf binary
+*.png binary
+*.zst binary

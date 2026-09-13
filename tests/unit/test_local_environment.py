@@ -3,7 +3,8 @@
 The build and start-up itself is checked by ``CP-0061`` on a runner with Docker. These
 tests cover what can be read from the files alone and is easy to lose in an edit: the
 publication boundary of ADR-0012, the digest pinning of ADR-0014, and the promise that
-``.env.example`` lists every variable the environment needs.
+``.env.example`` lists every variable the environment needs, and the line endings that
+ADR-0018 requires for a checkout on any operating system.
 """
 
 import re
@@ -17,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 COMPOSE_FILE = ROOT / "compose.yaml"
 DOCKERFILE = ROOT / "Dockerfile"
 ENV_EXAMPLE = ROOT / ".env.example"
+GITATTRIBUTES = ROOT / ".gitattributes"
 
 VARIABLE_REFERENCE = re.compile(r"\$\{([A-Z0-9_]+)")
 ENV_ASSIGNMENT = re.compile(r"^([A-Z0-9_]+)=", re.MULTILINE)
@@ -117,6 +119,35 @@ def test_env_example_holds_no_secret_value() -> None:
     for line in ENV_EXAMPLE.read_text(encoding="utf-8").splitlines():
         if "PASSWORD" in line and not line.startswith("#"):
             assert line.endswith("="), f"{line} carries a value"
+
+
+def test_files_mounted_into_containers_use_lf(services: dict[str, Any]) -> None:
+    """A CRLF checkout aborts PostgreSQL initialisation before any role is created.
+
+    The init script is the only thing this repository bind mounts into a container, so a
+    carriage return reaches bash directly. ``set -euo pipefail`` then fails with
+    ``invalid option name`` and the database never becomes healthy.
+    """
+    sources = [
+        ROOT / str(entry).split(":", 1)[0]
+        for service in services.values()
+        for entry in service.get("volumes", [])
+        if str(entry).startswith("./")
+    ]
+
+    assert sources, "nothing is bind mounted, so the check proves nothing"
+    mounted = [path for source in sources for path in sorted(source.rglob("*")) if path.is_file()]
+    assert mounted, "the bind mounted directories are empty"
+    for path in mounted:
+        name = path.relative_to(ROOT)
+        assert b"\r" not in path.read_bytes(), f"{name} contains a carriage return"
+
+
+def test_line_endings_are_normalised_for_every_checkout() -> None:
+    """The check above only fires where CRLF was produced, so keep the cause in place."""
+    assert re.search(
+        r"^\* text=auto eol=lf$", GITATTRIBUTES.read_text(encoding="utf-8"), re.MULTILINE
+    ), ".gitattributes no longer forces LF for every tracked text file"
 
 
 def _named_volumes(service: dict[str, Any]) -> set[str]:
