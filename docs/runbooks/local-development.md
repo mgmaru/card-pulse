@@ -4,9 +4,9 @@
 >
 > 最終更新: 2026-09-13
 >
-> 最終確認日: 2026-09-13。Colima 0.10.3、Docker 29.8.0、Docker Compose 5.5.1、macOS（Apple Silicon）で、設定から初期化までを通しで実行した。
+> 最終確認日: macOSは2026-09-13。Windows（WSL2）は未実施。確認状況は[前提](#前提)にOSごとに記載する。
 
-Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動し、停止・初期化するまでの手順を示す。構成の判断は[ADR-0006](../adr/0006-docker-compose-local-development.md)と[ADR-0016](../adr/0016-local-compose-artifact-volume.md)、Dockerで再現できる範囲は[Dockerによる環境再現](../learning/docker-environment-reproduction.md)を参照する。
+Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動し、停止・初期化するまでの手順を示す。構成の判断は[ADR-0006](../adr/0006-docker-compose-local-development.md)と[ADR-0016](../adr/0016-local-compose-artifact-volume.md)、container runtimeの選定は[ADR-0018](../adr/0018-per-os-container-runtime.md)、Dockerで再現できる範囲は[Dockerによる環境再現](../learning/docker-environment-reproduction.md)を参照する。
 
 Python側のsetupと品質検査はcontainerを使わない。コマンドは[開発環境と品質検査](../../CONTRIBUTING.md#開発環境と品質検査)を正とする。
 
@@ -16,7 +16,23 @@ Python側のsetupと品質検査はcontainerを使わない。コマンドは[�
 
 ## 前提
 
-container runtimeは[ADR-0017](../adr/0017-colima-container-runtime.md)でColimaを採用している。初回だけ次を実行する。
+### 共通
+
+repositoryは、container runtimeがmountできる領域へ置く。`compose.yaml`は`./docker/postgres/initdb`をbind mountしており、この領域を外れるとmountが空のdirectoryとして成立してしまう。初期化scriptが実行されず、runtime roleが無いままDBが起動し、APIとWorkerが接続できない。mount先のdirectoryは存在するため、原因が分かりにくい形で失敗する。OSごとの条件は下の節に書く。
+
+その他の共通条件は次のとおり。
+
+- imageのpullとbuildにInternet接続が必要。起動後の運用には不要。
+- 使用するhost portは既定で`127.0.0.1:5432`と`127.0.0.1:8000`。他のPostgreSQLが5432を使っている場合は`.env`で変更する。
+- 改行コードはcloneした時点でLFになる。`.gitattributes`が強制し、bind mount対象にCRが無いことを`tests/unit/test_local_environment.py`が検査する（[ADR-0018](../adr/0018-per-os-container-runtime.md)）。
+
+以降の「[設定](#設定)」から「[初期化](#初期化破壊的)」までは、OSによらず同じコマンドで実行する。
+
+### macOS
+
+最終確認日: 2026-09-13（Colima 0.10.3、Docker 29.8.0、Docker Compose 5.5.1、Apple Silicon）。
+
+初回だけ次を実行する。
 
 ```bash
 brew install colima docker docker-compose
@@ -30,6 +46,8 @@ brew install colima docker docker-compose
 }
 ```
 
+Colimaは既定で`$HOME`配下だけをVMへmountする。repositoryは`$HOME`の下に置く。
+
 開発を始めるたびにVMを起動する。停止中は`docker`コマンドがdaemonへ接続できずに失敗する。
 
 ```bash
@@ -39,16 +57,43 @@ colima status
 
 `colima is running using macOS Virtualization.Framework` が表示されること。既定の割り当ては2 CPU、2GiB memory、100GiB diskで、この構成のbuildと起動はこの範囲に収まる。増やす場合は`colima start --cpu 4 --memory 8`のように指定し、変更した理由をこの節へ追記する。
 
+### Windows（WSL2）
+
+最終確認日: 未実施。この節は`CP-0078`で[ADR-0018](../adr/0018-per-os-container-runtime.md)の方針から書いたもので、実機で通していない。最初に使うときに手順を実行し、差分があればこの節を直したうえで確認日を記録する。
+
+Docker Desktopは使わない。WSL2のdistribution内へDocker Engineを直接入れる（[ADR-0018](../adr/0018-per-os-container-runtime.md)）。
+
+repositoryはWSL2のfilesystem内（`~/`配下）へcloneする。`/mnt/c`配下はdrvfs経由になり、bind mountの性能とfile modeが変わる。
+
+Docker Engineをserviceとして起動するため、WSL2でsystemdを有効にする。`/etc/wsl.conf`へ次を書き、`wsl --shutdown`で再起動する。
+
+```ini
+[boot]
+systemd=true
+```
+
+distributionのpackageからDocker Engineとcompose pluginを入れる。plugin pathはpackageが設定するため、macOSのような`cliPluginsExtraDirs`の追加は要らない。
+
+```bash
+sudo apt-get install docker.io docker-compose-v2   # Ubuntuの場合
+sudo usermod -aG docker "$USER"                    # 再ログインで反映
+```
+
+VMの割り当てはWindows側の`%UserProfile%\.wslconfig`で指定する。Colimaの`--cpu`と`--memory`に相当する。
+
+```ini
+[wsl2]
+memory=8GB
+processors=4
+```
+
+WSL2内でloopbackへ公開したportは、Windows側の`localhost`からも到達できる。`127.0.0.1`へのbindを変える必要はない。
+
 versionを確認する。
 
 ```bash
 docker --version && docker compose version
 ```
-
-`Docker version 29.8.0`、`Docker Compose version 5.5.1` を確認済み。Compose v2の機能だけを使うため、これ以降のversionでも手順は変わらない。
-
-- imageのpullとbuildにInternet接続が必要。起動後の運用には不要。
-- 使用するhost portは既定で`127.0.0.1:5432`と`127.0.0.1:8000`。他のPostgreSQLが5432を使っている場合は`.env`で変更する。
 
 ## 設定
 
@@ -221,5 +266,6 @@ docker compose up --build -d
 | `api`が起動直後に終了する | `CARD_PULSE_DATABASE_URL`が不正。ログに変数名が出る | `.env`のpasswordにURLで意味を持つ文字が入っていないか確認する。`openssl rand -hex`の出力を使う |
 | `/health/dependencies`が`password authentication failed`を返す | `.env`のpasswordを変更したが、既存volumeのroleは初期化時のまま | roleを`ALTER ROLE`で更新するか、「[初期化](#初期化破壊的)」を行う |
 | buildが`required-version`で失敗する | Dockerfileが固定するuvのimage tagと`pyproject.toml`の`required-version`が食い違っている | どちらかを揃える。versionの正は`pyproject.toml` |
-| `docker`コマンドがdaemonへ接続できない | ColimaのVMが停止している | `colima start` を実行する |
-| `docker compose` が unknown command になる | plugin pathが未登録 | 「[前提](#前提)」の`cliPluginsExtraDirs`を設定する |
+| `docker`コマンドがdaemonへ接続できない | macOSはColimaのVMが停止している。WSL2はdockerdが起動していない | `colima start`、またはWSL2で`sudo systemctl start docker` |
+| `docker compose` が unknown command になる | macOSでplugin pathが未登録 | 「[macOS](#macos)」の`cliPluginsExtraDirs`を設定する |
+| `db`はhealthyだがAPIが`password authentication failed`を返す | repositoryがmountされない場所にあり、初期化scriptが実行されなかった | 「[共通](#共通)」の置き場所を満たしてから「[初期化](#初期化破壊的)」を行う |

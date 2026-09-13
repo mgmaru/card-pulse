@@ -114,7 +114,7 @@ format、lint、型チェック、testをこの順に実行し、途中の段階
 
 ## ローカル実行環境
 
-Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動します。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。構成の判断は [ADR-0006](docs/adr/0006-docker-compose-local-development.md) と [ADR-0016](docs/adr/0016-local-compose-artifact-volume.md) を正とします。
+Docker ComposeでAPI、Collection Worker、PostgreSQL、artifact storageを起動します。本番固有のmanaged service、IAM、負荷分散、backupはDockerで再現できる前提にしません。構成の判断は [ADR-0006](docs/adr/0006-docker-compose-local-development.md) と [ADR-0016](docs/adr/0016-local-compose-artifact-volume.md)、開発機のOSごとのcontainer runtimeは [ADR-0018](docs/adr/0018-per-os-container-runtime.md) を正とします。前提条件はOSによって異なり、リポジトリは container runtime が mount できる領域に置く必要があります。
 
 ```bash
 cp .env.example .env     # 初回のみ。passwordを生成して記入する

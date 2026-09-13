@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-13
 >
-> Next task ID: `CP-0078`
+> Next task ID: `CP-0080`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -70,6 +70,13 @@
   - Evidence: [ADR-0016](../adr/0016-local-compose-artifact-volume.md)でartifact storageをDocker volume上のfilesystemとし、APIとWorkerが共有する単一image、loopbackだけへ公開するport、livenessだけを表すhealth checkを決めた。`compose.yaml`は`db`（`postgres:18.6-trixie`をdigest固定）、`api`、`worker`と`db-data`・`artifacts` volumeを定義し、`Dockerfile`はuv image上でCPython 3.14.7とproject依存を固定して非root uid 10001で実行する。手順は[ローカル開発環境Runbook](../runbooks/local-development.md)を正とする。Colima 0.10.3・Docker 29.8.0・Docker Compose 5.5.1で、build、3 serviceのhealthy化、`/health`と`/health/dependencies`の応答、runtime roleが非superuserで作られること、public tableが0件の空DB、host側からの`tests/integration`成功（2件）、`docker compose stop db`中もAPIが200で`degraded`を返しapi・workerがhealthyのまま再起動しないこと、`docker compose start db`後の復帰、artifact volumeがworkerにだけmountされ`docker compose cp`で取り出せること、`down`でデータが残り`down --volumes`で消えて再初期化されることを確認した。構成の不変条件は`tests/unit/test_local_environment.py`が検査し、CIでの起動検査は`CP-0061`で行う。
 - [x] `CP-0013` `done` — setup、test、lint、format、型チェックの再現可能なコマンドを定義する。
   - Evidence: [ADR-0015](../adr/0015-quality-check-toolchain.md)でruff 0.16.7、mypy 2.3.1、pytest 9.1.1を採用し、`pyproject.toml`の`[dependency-groups]`と各tool設定へ反映して`uv.lock`を更新した。setupは`uv sync --locked`、全検査は`python3 scripts/check.py`とし、各段階を`uv run --locked`経由で実行する。`.venv`を削除した状態から`uv sync --locked`を実行し、format、lint、型チェック、testの4段階が成功すること、型不整合を含むfileを置くと3段階が失敗して終了codeが1になること、`uv.lock`と`pyproject.toml`が食い違うと`--locked`が検査前に失敗することを確認した。コマンドは[開発環境と品質検査](../../CONTRIBUTING.md#開発環境と品質検査)を正とし、CIへの追加は`CP-0060`で行う。
+- [x] `CP-0078` `done` — Docker環境をWSL2でも同じ手順で起動できるようにする。
+  - Depends on: `CP-0012`
+  - Done when: 改行コードによる初期化の失敗を機械検査で防ぎ、runtimeの選定基準がOSに依存しない形でADRに残り、Runbookの前提条件がOS別に分かれて共通部分が一つに保たれている。
+  - Evidence: `CP-0012`の成果物をfile単位で確認した。固定した3つのimage digestが`linux/amd64`と`linux/arm64`を含むindex manifestであること、builder段の`uv sync --locked`をamd64のエミュレーションで実行してCPython 3.14.7とpsycopg 3.3.5のbinary wheelが入ること、runtime段のuser作成がamd64でも同じ結果になること、`compose.yaml`のhost依存がbind mount一つとloopback公開二つだけであることを確認した。壊れたのは改行コードだけで、CRLFの初期化scriptを実際のPostgreSQLへ渡すと`set: pipefail: invalid option name`で初期化が中断しcontainerが終了した。dotenv fileのCRLFはComposeが吸収した。対処として`.gitattributes`で全text fileをLFに固定し、bind mount対象にCRが無いことを`tests/unit/test_local_environment.py`が検査する（CRを入れると実際に失敗することを確認）。[ADR-0018](../adr/0018-per-os-container-runtime.md)で[ADR-0017](../adr/0017-colima-container-runtime.md)を置換し、判断をruntimeの固有名詞から「無償条件が利用者や所属組織の区分に依存しないこと」という選定基準へ移して、macOSはColima、WindowsはWSL2内のdocker-ceとした。[ローカル開発環境Runbook](../runbooks/local-development.md)の前提を共通・macOS・WSL2へ分け、repositoryをcontainer runtimeがmountできる領域へ置く条件を共通側へ追加した。WSL2の手順は実機未確認で、最終確認日をOSごとに記録する形にした。WSL2はLinux amd64上のDocker Engineであり`CP-0061`のCI jobが継続的な互換性検証を兼ねる。
+- [ ] `CP-0079` `planned` — 新しいマシンで開発環境を再現する手順を定義する。
+  - Depends on: `CP-0078`
+  - Done when: repositoryのcheckoutから開発と取込を始められる状態までの前提と手順が一つのsource of truthに定まり、前提の充足を機械的に確認できるか、確認を自動化しない理由が記録されている。Docker環境に限らず、git設定、Python toolchain、`.env`、エージェント設定を対象に含める。
 - [ ] `CP-0014` `planned` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
