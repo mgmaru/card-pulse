@@ -77,3 +77,71 @@ jobs:
 
       - name: Check Codex and Claude Code parity
         run: python3 .agents/skills/maintain-tool-parity/scripts/check_tool_parity.py
+
+  # 空のrunner上でCompose環境をbuildして起動し、各serviceのhealth checkとその依存の
+  # 報告が通ることを確認する（ADR-0016）。開発機がmacOS、runnerがLinux amd64のため、
+  # この検査はWSL2構成の継続的な確認も兼ねる（ADR-0018）。DBを使うmigrationと
+  # integration testの追加は`CP-0062`で行う。
+  compose-environment:
+    name: Compose environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      # 手順の正はローカル開発環境Runbookで、CIも同じ入口（.envとdocker compose）を
+      # 使う。.env.exampleから作るため、変数が増えてもこのworkflowは追随しなくてよい。
+      # passwordはこの実行限りの値にする。runnerは実行後に破棄され、公開するportは
+      # loopbackだけに閉じる。
+      - name: Create .env with single-run passwords
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import secrets
+
+          template = pathlib.Path(".env.example").read_text(encoding="utf-8")
+          filled, count = re.subn(
+              r"(?m)^([A-Z0-9_]*PASSWORD)=$",
+              lambda match: f"{match.group(1)}={secrets.token_hex(32)}",
+              template,
+          )
+          if not count:
+              raise SystemExit(".env.example has no empty password assignment to fill")
+          pathlib.Path(".env").write_text(filled, encoding="utf-8")
+          print(f"filled {count} password assignment(s)")
+          PY
+
+      # このstepがbuildと起動とhealth checkの成否になる。--waitは全serviceのhealth
+      # checkが成功するまで待ち、一つでも失敗または終了すれば非ゼロで終わる。
+      - name: Build the image and start every service
+        run: docker compose up --build --wait --wait-timeout 300
+
+      - name: Show the state of every service
+        run: docker compose ps
+
+      # health checkはlivenessだけを表す（ADR-0016）。runtime roleが作られない、
+      # artifact volumeへ書けないといった失敗はprocessを落とさないため、healthyのまま
+      # 壊れた環境が通ってしまう。依存の報告まで読んでそれを防ぐ。
+      - name: Check the API reports every dependency as healthy
+        run: |
+          response="${RUNNER_TEMP}/api-dependencies.json"
+          curl --fail --silent --show-error --output "$response" \
+              "http://$(docker compose port api 8000)/health/dependencies"
+          cat "$response"
+          jq --exit-status '.status == "ok"' "$response" > /dev/null
+
+      - name: Check the Worker reports every dependency as healthy
+        run: |
+          heartbeat="${RUNNER_TEMP}/worker-heartbeat.json"
+          docker compose exec -T worker sh -c 'cat "$CARD_PULSE_WORKER_HEARTBEAT_PATH"' > "$heartbeat"
+          cat "$heartbeat"
+          jq --exit-status '.status == "ok"' "$heartbeat" > /dev/null
+
+      - name: Report the environment after a failure
+        if: failure()
+        run: |
+          docker compose ps --all
+          docker compose logs --no-color --timestamps

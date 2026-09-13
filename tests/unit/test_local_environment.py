@@ -1,10 +1,10 @@
 """Guard the local Compose environment against changes that break a recorded decision.
 
-The build and start-up itself is checked by ``CP-0061`` on a runner with Docker. These
-tests cover what can be read from the files alone and is easy to lose in an edit: the
-publication boundary of ADR-0012, the digest pinning of ADR-0014, and the promise that
-``.env.example`` lists every variable the environment needs, and the line endings that
-ADR-0018 requires for a checkout on any operating system.
+The build and start-up itself is checked by the ``Compose environment`` job in CI, on a
+runner with Docker. These tests cover what can be read from the files alone and is easy
+to lose in an edit: the publication boundary of ADR-0012, the digest pinning of ADR-0014,
+and the promise that ``.env.example`` lists every variable the environment needs, and the
+line endings that ADR-0018 requires for a checkout on any operating system.
 """
 
 import re
