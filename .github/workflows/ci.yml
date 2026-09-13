@@ -50,6 +50,22 @@ jobs:
       - name: Run format, lint, type check, and tests
         run: python3 scripts/check.py
 
+  repository-ruleset:
+    name: Repository ruleset
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      # 適用はしない。CIから適用できると、mainを守る規則がmain経由で緩められる
+      # （ADR-0021）。ここでは食い違いを報告するだけにする。
+      - name: Check the enforced ruleset matches the committed one
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ruleset.py check
+
   agent-configuration:
     name: Agent configuration
     runs-on: ubuntu-24.04

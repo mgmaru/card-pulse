@@ -41,17 +41,26 @@ auto-mergeは使いません。CIの通過と同時にマージされると、�
 
 ### `main` の保護設定
 
-| 設定 | 値 | 目的 |
-| --- | --- | --- |
-| Allow merge commits | ON | タスクの境界を履歴へ残す |
-| Allow squash merging | OFF | コミット単位の経緯を失わせない |
-| Allow rebase merging | OFF | fast-forward相当の直線化を防ぐ |
-| Require a pull request before merging | ON | `main` への直接pushを禁止する |
-| Require status checks to pass | ON | CI成功をマージ条件にする |
-| Require branches to be up to date | ON | 古い `main` の上での検査結果でマージさせない |
-| Require linear history | OFF | マージコミットを禁止しないため |
+設定値の正は [`.github/rulesets/main-protection.json`](.github/rulesets/main-protection.json) です（[ADR-0021](docs/adr/0021-ruleset-as-a-file.md)）。ここには各規則が何を防ぐかだけを書き、値を複製しません。
 
-必須にするstatus checkは、CIに存在するjobだけを指定します。現在は `Documentation`、`Agent configuration`、`Quality checks` の3つです。Compose検査のjobは `CP-0061` で追加し、その時点で必須指定へ加えます。
+| 規則 | 防ぐこと |
+| --- | --- |
+| `pull_request`（`allowed_merge_methods: merge`） | `main` への直接pushと、squash・rebaseによる履歴の直線化。タスクの境界をマージコミットとして残します |
+| `required_status_checks`（`strict` 有効） | CIが失敗したままのマージと、古い `main` の上で得た検査結果でのマージ |
+| `deletion` | `main` の削除 |
+| `non_fast_forward` | `main` へのforce push |
+
+`required_linear_history` は使いません。マージコミットを禁止しないためです。
+
+必須にするstatus checkは、CIに存在するjobだけを指定します。追加するときはjobと同じpull requestでruleset fileへ足し、マージ前に適用します。
+
+```bash
+python3 scripts/ruleset.py check    # fileと実設定の差分を報告する。CIも同じコマンドを実行する
+python3 scripts/ruleset.py apply    # fileの内容をGitHubへ反映する。人が実行し、CIからは実行しない
+python3 scripts/ruleset.py export   # GitHub側の内容でfileを書き直す。UIで変更した後の取り込み用
+```
+
+`apply` にはrepositoryのadmin権限を持つ `gh` の認証が必要です。`check` はpublic repositoryなら認証なしで実行できます。ただし `bypass_actors` は書き込み権限のある読み手にしか返らないため、CIの実行では確認されません。
 
 ### ブランチ名の機械検査
 
