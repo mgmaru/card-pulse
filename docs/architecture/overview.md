@@ -108,6 +108,7 @@ source adapterは外部形式を共通契約へ変換するが、新しい情報
 - API、Worker、migration用に異なるroleを持たせる。
 - Compose内部networkまたは本人のprivate networkからのみ接続可能にする。
 - [DB要件](database-requirements.md)に従い、整合性、transaction、query、backup・復元、運用、費用を満たす製品を比較・検証する。
+- data directoryは開発でも配置先でもDockerのnamed volumeへ置き、host pathへbind mountしない（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。持ち出しと移植は論理backupで行う。
 
 ### Raw Artifact Storage
 
@@ -194,6 +195,7 @@ APIとWorkerは同じapplication imageを別commandで起動し、artifact stora
 - [ADR-0012: 個人用の非公開運用](../adr/0012-private-personal-operation.md)
 - [ADR-0016: ローカル環境のartifact storage](../adr/0016-local-compose-artifact-volume.md)
 - [ADR-0022: 設定・秘密情報・ローカルデータの保存規則](../adr/0022-configuration-secret-and-local-data-storage.md)
+- [ADR-0023: DBのdata directoryはnamed volume](../adr/0023-named-volume-for-database-data.md)
 - [DB要件](database-requirements.md)
 - [データモデル](data-model.md)
 - [Collector契約](../contracts/collector.md)

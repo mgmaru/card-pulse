@@ -106,6 +106,25 @@ def test_named_volumes_are_declared(compose: dict[str, Any]) -> None:
     assert used <= declared
 
 
+def test_no_service_keeps_state_on_a_host_path(services: dict[str, Any]) -> None:
+    """ADR-0023: state lives in named volumes, so an environment moves by dump, not by copy.
+
+    The only bind mount is the initialisation script, mounted read-only. A writable one
+    would put PostgreSQL's data directory, or the stored originals, on a host path whose
+    ownership rules differ per operating system.
+    """
+    bind_mounts = [
+        (name, str(entry))
+        for name, service in services.items()
+        for entry in service.get("volumes", [])
+        if str(entry).startswith(".")
+    ]
+
+    assert bind_mounts, "nothing is bind mounted, so the check proves nothing"
+    for name, entry in bind_mounts:
+        assert entry.endswith(":ro"), f"{name} bind mounts {entry} for writing"
+
+
 def test_env_example_documents_every_variable_the_environment_reads() -> None:
     referenced = set(VARIABLE_REFERENCE.findall(COMPOSE_FILE.read_text(encoding="utf-8")))
     documented = set(ENV_ASSIGNMENT.findall(ENV_EXAMPLE.read_text(encoding="utf-8")))

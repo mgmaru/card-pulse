@@ -2,7 +2,7 @@
 
 > 対象: プロジェクトオーナー本人
 >
-> 最終更新: 2026-09-13
+> 最終更新: 2026-09-14
 >
 > 最終確認日: macOSは2026-09-13。Windows（WSL2）は未実施。確認状況は[前提](#前提)にOSごとに記載する。
 
@@ -173,6 +173,22 @@ docker compose up --build -d
 依存を変えていなければ、再buildはprojectのinstall layerだけをやり直す。
 
 APIとWorkerは`card-pulse-app:dev`という一つのimageを共有し、buildの宣言は`api` serviceだけが持つ。`worker`だけを単独で起動する場合は、先に`docker compose build`でimageを作る。作られていないとComposeがregistryからpullしようとして失敗する。
+
+## DBの中身を見る
+
+DBのデータはDockerのnamed volume `card-pulse_db-data`にあり、working treeにも`var/`にも現れない（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。file として開ける形ではないため、中身を見るときはDBとして接続する。
+
+```bash
+docker compose exec db psql --username=postgres --dbname=card_pulse
+```
+
+host側のpsqlやGUI client（DBeaver、pgAdmin等）からは、公開している`127.0.0.1:5432`へ接続する。`<api-password>`は`.env`の`CARD_PULSE_API_DB_PASSWORD`の値に読み替える。
+
+```bash
+psql 'postgresql://card_pulse_api:<api-password>@127.0.0.1:5432/card_pulse'
+```
+
+別の環境へ移す場合や、「[初期化](#初期化破壊的)」の前に残す場合は、`pg_dump`の出力を`var/db/`へ置く（[ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)）。現時点ではschemaが無いため手順は未整備で、backupと空環境への復元は`CP-0044`で整える。
 
 ## テスト
 
