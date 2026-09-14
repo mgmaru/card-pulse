@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-14
 >
-> Next task ID: `CP-0088`
+> Next task ID: `CP-0089`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -166,6 +166,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0062` `planned` — 選定DBを使うmigrationとintegration testをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`, `CP-0023`
   - Done when: 空DBへのmigrationと保存・冪等性・rollbackの検査が本番候補と同じDB engineで成功する。
+- [ ] `CP-0088` `planned` — 手元のデータを失わずに別環境へ移せる最小のdump・復元手順を作る。
+  - Depends on: `CP-0016`, `CP-0018`
+  - Done when: 稼働中のCompose環境から`pg_dump`でdumpを取って`var/db/`へ置き、空のvolumeから復元してAPIとWorkerが接続できること、artifact volumeを取り出して戻せることが、[ローカル開発環境Runbook](../runbooks/local-development.md)の手順として実行できる。取得原本と人が下したreviewの判断は再取得できないため、実データが生まれる`CP-0024`より前に用意する（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。暗号化、世代管理、manifest、復元訓練は`CP-0044`が扱う。
 
 完了条件: 固定JSON/CSVサンプルを投入し、欠損した抽出結果を確定観測と分離しながら、追跡可能で重複のない観測値を再現できる。
 
@@ -219,6 +222,8 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Owner action: 配置先の端末と private network を用意する。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序をRunbookにする。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
+  - Depends on: `CP-0088`
+  - Done when: 暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
 - [ ] `CP-0045` `planned` — 継続、対象変更、中止の判断をADRに残す。
 
 完了条件: 利用価値、維持時間、データ品質を数値と事例で説明できる。
