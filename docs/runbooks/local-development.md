@@ -188,7 +188,7 @@ host側のpsqlやGUI client（DBeaver、pgAdmin等）からは、公開してい
 psql 'postgresql://card_pulse_api:<api-password>@127.0.0.1:5432/card_pulse'
 ```
 
-別の環境へ移す場合や、「[初期化](#初期化破壊的)」の前に残す場合は、`pg_dump`の出力を`var/db/`へ置く（[ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)）。現時点ではschemaが無いため手順は未整備で、backupと空環境への復元は`CP-0044`で整える。
+別の環境へ移す場合や、「[初期化](#初期化破壊的)」の前に残す場合は、`pg_dump`の出力を`var/db/`へ置く（[ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)）。現時点ではschemaが無いため手順は未整備である。最小のdump・復元手順は`CP-0088`、暗号化と世代管理を含む運用としてのbackupは`CP-0044`が扱う。
 
 ## テスト
 
@@ -256,7 +256,7 @@ docker compose cp worker:/srv/card-pulse/artifacts ./var/raw
 
 DBの全データと保存済み原本を削除して作り直す。
 
-削除されるもの: `card-pulse_db-data` volume（DB全体）と`card-pulse_artifacts` volume（取得原本すべて）。現時点ではbackup手順が未整備のため（`CP-0044`、`backup-restore` Runbook）、削除したデータは復旧できない。
+削除されるもの: `card-pulse_db-data` volume（DB全体）と`card-pulse_artifacts` volume（取得原本すべて）。現時点ではbackup手順が未整備のため（`CP-0088`、`CP-0044`、`backup-restore` Runbook）、削除したデータは復旧できない。
 
 実行前に対象を確認する。
 
