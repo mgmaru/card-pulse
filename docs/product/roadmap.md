@@ -228,7 +228,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
   - Depends on: `CP-0088`
-  - Done when: 暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
+  - Done when: 日次backupと、schema migration・大量手動取込・重要なreview作業の前の臨時backupが実行され、backupの失敗と前回成功からの26時間超過を検知できる（`DB-REC-01`）。暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
 - [ ] `CP-0045` `planned` — 継続、対象変更、中止の判断をADRに残す。
 
 完了条件: 利用価値、維持時間、データ品質を数値と事例で説明できる。
