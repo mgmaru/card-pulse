@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-14
 >
-> Next task ID: `CP-0089`
+> Next task ID: `CP-0090`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -176,7 +176,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
   - Depends on: `CP-0074`
-  - Done when: URL、request、応答・構造検査、parser、source内IDの解釈が`adapters/sources/<source-slug>/`と所有関係を明示した設定・fixture・testに収まり、entrypointから共通portへ注入され、applicationにsource slugによる処理分岐がない。
+  - Done when: URL、request、応答・構造検査、parser、source内IDの解釈が`adapters/sources/<source-slug>/`と所有関係を明示した設定・fixture・testに収まり、entrypointから共通portへ注入され、applicationにsource slugによる処理分岐がない。通常実行、dry run、再実行、結果確認、終了codeを`ingestion` Runbookに書いている（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
 - [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
   - Depends on: `CP-0074`
@@ -189,6 +189,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0028` `planned` — 2つ目、3つ目の情報源を追加し、共通契約を見直す。
   - Depends on: `CP-0074`, `CP-0075`
   - Done when: 各source packageが相互に依存せず、source固有のURL・応答構造・価格条件の表記と抽出規則が共通HTTP transport、application、domain、永続化、APIへ漏れずに追加でき、共通契約を変更した場合はsource固有事情ではなく共通の意味を追加した根拠を契約文書へ記録している。
+- [ ] `CP-0089` `planned` — parser versionを更新したときの再解析手順を`reparse` Runbookにする。
+  - Depends on: `CP-0066`, `CP-0075`
+  - Done when: 対象の選択、旧結果の保持、実行、差分確認、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書き、保存済み原本から一度実行して確認している。障害時の切り分けと手動再開は`CP-0075`の`source-failure` Runbookが扱い、ここでは計画的なparser更新だけを対象にする。
 - [ ] `CP-0063` `planned` — Collector contract testと固定fixtureによるparser regression testをGitHub Actionsへ追加する。
   - Depends on: `CP-0017`, `CP-0026`, `CP-0027`
   - Done when: source非由来の合成fixtureだけを使い、外部情報源へ接続せずに両方の検査とsource packageの依存境界検査が成功する。source由来fixtureはCIとGitへ含めない。
@@ -220,7 +223,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されず、sourceの停止理由と最終成功日時を確認できることを検証する。
 - [ ] `CP-0042` `planned` `owner` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
   - Owner action: 配置先の端末と private network を用意する。
-- [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序をRunbookにする。
+  - Done when: 配置、private接続、role、secret、health checkの手順を`deployment` Runbookに書き（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）、その手順どおりに配置した環境でAPIとWorkerが動き、API、DB、artifact storageがInternetから到達不能であることを確認している。
+- [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序を`schema-change` Runbookにする。
+  - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
   - Depends on: `CP-0088`
   - Done when: 暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
@@ -236,6 +241,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0047` `planned` — 原画像を先に保存し、OCR結果をextracted recordとして派生関係付きで残す。
   - Depends on: `CP-0066`
 - [ ] `CP-0048` `planned` — 項目単位の抽出confidenceとカード同定のmatch scoreを分け、review queueを実装する。
+  - Done when: 確認方法、確定・却下・保留、監査履歴を`review-queue` Runbookに書いている（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。
 - [ ] `CP-0049` `planned` — 誤認識率と1枚あたりのレビュー時間を測る。
 
 完了条件: 人間の修正時間を含め、手入力より有利か判断できる。
