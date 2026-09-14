@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-14
 >
-> Next task ID: `CP-0087`
+> Next task ID: `CP-0088`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -92,6 +92,10 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [x] `CP-0014` `done` — 設定、秘密情報、取得原本、開発用volumeの保存規則を整える。
   - Done when: 設定値の入口、秘密情報の置き場、取得原本とローカルデータの層、削除してよい条件が一つのADRに定まり、規則を破る変更をCIが検出する。
   - Evidence: [ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)で、設定を「環境ごとに変わる値」と「動作そのものを決める値」へ分け、前者を環境変数で渡して`settings.py`を唯一の読み取り口とし（`.env`はComposeと人がそれを環境変数へ変換するfileで、container内には無い）、後者を`config/`のfileとした。読み取り口を一つにするのは、health checkとそれが検査するprocessが別processでありながら同じportとpathへ合意する必要があるためで、この合意を規約ではなく同じ関数の呼び出しで保証する。秘密情報は`.env`ひとつに限り、ローカルデータを`var/`の5層へ集約した。書き込むcomponentがまだ無い`var/db/`と`var/review/`も残し、`CP-0044`とPhase 4のreviewが最初の利用者であることを明記した。`CP-0009`のPoCが残した`var/db-poc/`は2026-09-13時点で35GBあり、`secret/backup.passphrase`が`.env`の外にある唯一の秘密である。測定結果が[PoC結果](../research/database-poc-2026-09.md)に、harnessが`scripts/db_poc/`に凍結されているため削除しても結論は追跡できるが、同じ入力での再確認手段が消えるため保持し、削除してよい3つの条件をADRへ書いた。`tests/unit/test_storage_layout.py`が、`var/`と`config/`に`.gitkeep`以外の追跡fileが無いこと、`.env`と`var/`配下のデータが除外され`.env.example`だけが追跡されること、`var/`の4層が存在すること、runtimeの既定書き込み先が`var/`配下であることを検査する。`var/raw/page.html`を`git add -f`した場合、`var/db/`を移動した場合、`DEFAULT_ARTIFACT_ROOT`を`var/`の外へ変えた場合のそれぞれで対応する検査が失敗することを確認した。参照は[実装上の原則](../../CONTRIBUTING.md#実装上の原則)、[アーキテクチャ概要](../architecture/overview.md#raw-artifact-storage)、[ローカル開発環境Runbook](../runbooks/local-development.md#原本を取り出す)、[README](../../README.md)、`settings.py`のdocstringから同じADRへ向けた。
+- [x] `CP-0087` `done` — DBのdata directoryをhostへbind mountするか決める。
+  - Depends on: `CP-0014`
+  - Done when: 開発と本番でvolumeの方式を分けるかどうかが判断され、理由と再検討条件がADRに残り、compose定義がその判断どおりであることを機械検査が保つ。
+  - Evidence: [ADR-0023](../adr/0023-named-volume-for-database-data.md)で、DBのdata directoryを開発機でも将来の配置でもnamed volume `db-data`とし、`var/db/`を含むhost pathへのbind mountを採らないと決めた。判断の材料は、PostgreSQLのfile system level backupがserver停止を要しcluster全体でしか成立しないこと、major versionを跨げないこと、公式imageのPGDATAがversion固有pathで所有者の一致を要すること（いずれも確認日2026-09-14、URLはADRに記載）、およびhostからDBを読む経路が公開済みの`127.0.0.1:5432`にすでにあることである。開発だけbind mountする案は、PGDATAがhostから読めるfileではないため利点が実現せず、`CP-0061`の`Compose environment` jobが検証する構成と日常的に動かす構成が永続化層で食い違うため採らなかった。持ち出しと移植は`pg_dump`の出力を`var/db/`へ置く形とし（[ADR-0022](../adr/0022-configuration-secret-and-local-data-storage.md)）、手順は`CP-0044`が扱う。`tests/unit/test_local_environment.py`が、host pathのbind mountが読み取り専用の初期化scriptだけであることを検査し、書き込み可能なbind mountを`compose.yaml`へ足すと失敗することを確認した。[ローカル開発環境Runbook](../runbooks/local-development.md#dbの中身を見る)へ、データの所在と接続方法を追加した。
 - [ ] `CP-0015` `planned` — `run_id`、source、開始・終了時刻、取得件数、保存件数、エラー分類を記録するログを定義する。
 - [x] `CP-0059` `done` — GitHub Actionsで文書リンクとroadmap形式を継続的に検査する。
   - Evidence: `.github/workflows/ci.yml`でpull requestと`main`へのpushを対象に両方の検査を実行する。

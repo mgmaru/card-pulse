@@ -84,5 +84,7 @@ services:
       start_period: 20s
 
 volumes:
+  # 状態はnamed volumeに置き、host pathへbind mountしない（ADR-0023）。PGDATAはhostから
+  # 読めるfileではなく、持ち出しと移植は`pg_dump`の出力を`var/db/`へ置く形で行う。
   db-data:
   artifacts:
