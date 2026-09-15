@@ -21,6 +21,8 @@ card-pulse-db-1       db        Exited
 
 決定そのものは[ADR-0016](../adr/0016-local-compose-artifact-volume.md)と[ADR-0005](../adr/0005-separate-runtime-services.md)を正とする。
 
+ADR-0005は状態が`Superseded`だが、置換した[ADR-0012](../adr/0012-private-personal-operation.md)は「ADR-0005で決めたAPI、Collection Worker、DBのruntime分離は維持する」と明記している。置き換わったのはAPIを外部公開するかどうかの部分だけで、**この文書が扱う障害分離の根拠は現行のまま**である。
+
 ## 2. 前提: health checkとは何か
 
 ### 2.1 Dockerが定期的にコマンドを実行する
@@ -274,7 +276,8 @@ Card Pulseのロードマップが各タスクの`Evidence`に「Xを壊すと�
 ## 10. 関連文書
 
 - [ADR-0016](../adr/0016-local-compose-artifact-volume.md)（health checkをlivenessに限る判断）
-- [ADR-0005](../adr/0005-separate-runtime-services.md)（runtimeを分けて障害を分離する）
+- [ADR-0005](../adr/0005-separate-runtime-services.md)（runtimeを分けて障害を分離する。`Superseded`だが、runtime分離の判断は[ADR-0012](../adr/0012-private-personal-operation.md)が維持している）
+- [ADR-0012](../adr/0012-private-personal-operation.md)（ADR-0005を置換した範囲）
 - [ADR-0006](../adr/0006-docker-compose-local-development.md)（ローカルのservice構成）
 - [アーキテクチャ概要](../architecture/overview.md)（service構成と接続経路）
 - [ローカル開発環境Runbook](../runbooks/local-development.md)（起動、停止、DBを止めた場合の確認手順）
