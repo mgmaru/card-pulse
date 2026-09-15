@@ -2,6 +2,8 @@
 
 - 状態: Superseded
 - 日付: 2026-09-06
+- 決定者: プロジェクトオーナー
+- 置換するADR: なし
 - 置換されたADR: [ADR-0012](0012-private-personal-operation.md)
 
 ## Context

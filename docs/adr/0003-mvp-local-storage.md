@@ -2,7 +2,9 @@
 
 - 状態: Superseded
 - 日付: 2026-09-06
-- 後継ADR: [ADR-0004](0004-server-database-selection.md)
+- 決定者: プロジェクトオーナー
+- 置換するADR: なし
+- 置換されたADR: [ADR-0004](0004-server-database-selection.md)
 
 ## Context
 

@@ -2,7 +2,9 @@
 
 - 状態: Accepted
 - 日付: 2026-09-06
+- 決定者: プロジェクトオーナー
 - 置換するADR: [ADR-0003](0003-mvp-local-storage.md)
+- 置換されたADR: なし
 
 ## Context
 

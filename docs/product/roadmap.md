@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-15
 >
-> Next task ID: `CP-0096`
+> Next task ID: `CP-0097`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -118,6 +118,8 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Evidence: [ヘルスチェックは何を見ているのか](../learning/health-check-and-failure-isolation.md)に、health checkの仕組み、livenessと依存の状態の区別、[ADR-0016](../adr/0016-local-compose-artifact-volume.md)がlivenessだけを表すと決めた理由、DBを止めたときの実測、`Status`より先に動く`FailingStreak`を`CP-0092`が見る理由をまとめた。「containerがhealthyならserviceは仕事ができる」「`FailingStreak`はDBの状態」という誤解を8節に表として置いた。検査は守りたい性質を意図的に壊して落ちることを確認してはじめて検査になる、という点を7.4節で一般化した。[Learning README](../learning/README.md)の索引へ追加した。
 - [x] `CP-0095` `done` — 判断を守る仕組みと、置換されたADRの引用について、リポジトリ規則を補う。
   - Evidence: `AGENTS.md`の`Documentation`へ2点を追加した。既存の「判断をADRへ記録する」だけでは、既存ADRのDecisionを守る検査を作った場合にどこへ書くかが決まらないため、そのADRの`Validation`へ記録することと、それが`Decision`の書き換えに当たらないことを明記した。あわせて、`Superseded`なADRを現行の根拠として引用する前に状態を確認し、生きている範囲と置換したADRを示すことを規則にした。どちらも`CP-0092`と`CP-0094`で実際に抜けた箇所で、前者はADR-0016の`Validation`が自身の回帰検査を知らない状態、後者は学習資料が`Superseded`なADR-0005を注記なしで引用していた状態として現れた。既存の規則と重複する内容は足していない。`AGENTS.md`は両ツール共通の正であり（[CLAUDE.md](../../CLAUDE.md)）、CodexとClaude Codeの双方へ同時に効く。
+- [x] `CP-0096` `done` — ADRの節とヘッダ項目を規則にし、既存ADRの体裁を揃える。
+  - Evidence: 23件を機械的に点検し、節は全件がテンプレートの5節ちょうどで一致していた一方、ヘッダ項目は6件が逸脱していた（ADR-0001・0002・0006が3項目欠落、ADR-0003が3項目欠落と独自ラベル`後継ADR`、ADR-0004・0005が1項目欠落）。いずれもテンプレートが固まる前のADR-0001〜0006に集中していた。[ADR README](../adr/README.md#文書の構成)へ`文書の構成`節を追加し、5節の必須と順序、該当が無い節も削除しないこと、ヘッダ5項目の必須と「なし」の記入、`置換するADR`と`置換されたADR`の向きの違い、`###`小見出しを`Decision`だけに使うことを定めた。`###`が31個すべて`Decision`内にあることを確認して規則にした。`読みやすさ`節では、`Decision`の平均が72字/文、最長文の平均が113字であり、ADR-0014以降で文数が増えた（24・29・22文）のに表が23件中4件しか使われていない実測をもとに、一文一論点と60字の目安、`Decision`の`###`分割、3軸以上の比較を表にすることを定めた。`Consequences`と`Alternatives considered`は全23件で既に散文0文の箇条書きだったため、現状の追認として記載した。文書全体の書き分けは[`write-project-docs`](../../.agents/skills/write-project-docs/SKILL.md)へ委ね、重複を書いていない。既存6件はヘッダ項目だけを補い、本文は変更していない（差分がヘッダ行のみであることを確認済み）。23件すべてがテンプレート順の5項目ちょうどになった。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
@@ -148,7 +150,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Evidence: [ADR-0021](../adr/0021-ruleset-as-a-file.md)で`.github/rulesets/main-protection.json`を正とし、GitHub側をそこから派生させる形を決めた。決め手は、規則の変更をfile側から始めればpull requestの差分として必ず現れることで、UIからの直接変更はrepositoryに痕跡を残さない。`scripts/ruleset.py`が`check`、`apply`、`export`を持ち、CIの`Repository ruleset` jobは`check`だけを実行する。適用をCIから行えると`main`を守る規則が`main`経由で緩められるため、`apply`は人が実行する操作に限った。public repositoryのrulesetは未認証で読めることを`cli/cli`など3件で確認済みで、CIに追加のcredentialを置かない。`bypass_actors`は書き込み権限のある読み手にしか返らないためfileへ置かず、`apply`が常に空を送ることで迂回できる主体が生じない形にした。規則を1つ落とした場合と`strict_required_status_checks_policy`を変えた場合の両方で検査が失敗することを確認した。CI job自身を必須status checkへ追加する変更もfileの差分として行い、適用後に4つの必須checkが揃うことを確認した。表に無かった`deletion`、`non_fast_forward`、`require_extra_approval_for_unattributed_changes`は、[保護設定](../../CONTRIBUTING.md#main-の保護設定)を値の複製から各規則が防ぐことの説明へ書き換えて解消した。
 
 - [ ] `CP-0086` `planned` — ADR管理の機械検査を導入するか再判断する。
-  - Done when: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)が定めた再検討条件（ADR 20件）に達した時点の判断が記録され、validatorを追加するか、見送る理由と次の再検討条件が同じ節へ更新されている。
+  - Done when: [ADR管理の機械検査](../adr/README.md#adr管理の機械検査)が定めた再検討条件（ADR 20件）に達した時点の判断が記録され、validatorを追加するか、見送る理由と次の再検討条件が同じ節へ更新されている。2026-09-15に23件となり、`CP-0096`が節・ヘッダ項目の不整合を6件検出したため、件数と不整合の両方で条件を満たしている。`CP-0096`が規則を文章にしたが、同じ不整合は規則が無かった時期に生まれたものであり、文章だけでは再発を防げない。検査対象の候補は、5節の存在と順序、ヘッダ5項目の存在と順序、状態値、置換関係の相互参照、一覧表との一致である。
 
 完了条件: DB選定の根拠がADRに残り、新しい環境で文書どおりにDocker環境を起動し、空DB作成とテスト実行ができる。
 
