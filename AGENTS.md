@@ -51,6 +51,8 @@
 
 - Update relevant product, architecture, contract, source, or runbook documents with behavioral changes.
 - Record decisions that affect several components or constrain future work in an ADR. State why the chosen option was preferred and emphasize the decisive sentence in bold, as `docs/adr/README.md` describes.
+- When a test, CI job, or other check starts enforcing an accepted ADR's decision, record it in that ADR's `Validation` section. Recording how a decision is verified is not rewriting the `Decision`, which stays as accepted.
+- Check an ADR's status before citing it as a current reason. A `Superseded` ADR can still hold for part of its decision; name the part that survives and the ADR that replaced the rest.
 - Add a checked date and supporting URL to source restrictions, prices, rate limits, terms, and other volatile external facts.
 - Prefer migrations, code types, and machine-readable schemas as field-level sources of truth. Document their meaning and invariants instead of duplicating them.
 - Run `python3 .agents/skills/check-doc-links/scripts/check_doc_links.py` after creating, editing, moving, renaming, or deleting Markdown documentation.
