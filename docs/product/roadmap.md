@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-15
 >
-> Next task ID: `CP-0091`
+> Next task ID: `CP-0094`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -110,6 +110,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0012`
   - Done when: 空のGitHub-hosted runnerでCompose環境をbuild・起動し、各serviceのhealth checkが成功する。同jobを`main`のrulesetの必須status checkへ追加し、[保護設定](../../CONTRIBUTING.md#main-の保護設定)へ反映している。
   - Evidence: `.github/workflows/ci.yml`の`Compose environment` jobが、ubuntu-24.04のrunnerで`.env.example`のpassword行をその実行限りの値で埋めた`.env`を作り、`docker compose up --build --wait`でimage buildと起動を行う。`--wait`が3 serviceのhealth checkの成功を待ち、一つでも失敗すればjobが失敗する。変数名をworkflowへ書き写さず`.env.example`から`.env`を作るため、必要な変数が増えてもjob側の変更は要らない。health checkはliveness（[ADR-0016](../adr/0016-local-compose-artifact-volume.md)）だけを表し、runtime roleが作られない、artifact volumeへ書けないといった壊れ方ではprocessが落ちずhealthyのまま通ってしまうため、APIの`/health/dependencies`とWorkerのheartbeatが`status: ok`であることも検査する。Colima（macOS、arm64）で`docker compose stop db`を実行した状態を作り、`api`と`worker`がhealthyのままこの2つの検査だけがexit 1になること、正常時は両方が`ok`を返すことを確認した。必須status checkへの追加は[`.github/rulesets/main-protection.json`](../../.github/rulesets/main-protection.json)の差分として行い（[ADR-0021](../adr/0021-ruleset-as-a-file.md)）、`python3 scripts/ruleset.py apply`で適用した。[保護設定](../../CONTRIBUTING.md#main-の保護設定)は各規則が防ぐことだけを書き値を複製しないため表の変更は不要で、[ローカル実行環境](../../CONTRIBUTING.md#ローカル実行環境)へCIが同じ手順を実行することを追記した。pull request #14の実行logで、空のubuntu-24.04 runnerがimageをbuildし、db・api・workerがhealthyになり、両方の依存検査が`ok`を返すまでを26秒で終えたことを確認した。
+- [ ] `CP-0092` `planned` — 依存が落ちてもserviceが生き続ける性質をCIの回帰検査にする。
+  - Depends on: `CP-0061`
+  - Done when: `Compose environment` jobが、`db`を止めた状態で`api`と`worker`が`healthy`のままであること、APIの`/health/dependencies`がHTTP 200で`degraded`と失敗理由を返すこと、Worker heartbeatが`degraded`のまま更新され続けること、`db`の復帰後に両方が`ok`へ戻ることを検査する。health checkを依存の状態まで見る形へ変えるとこの検査が失敗することを確認している。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
@@ -162,6 +165,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0018`, `CP-0066`
 - [ ] `CP-0021` `planned` — DBとartifact storageの片方だけが成功した場合の状態、再実行、孤立データ処理を決める。
 - [ ] `CP-0022` `planned` — API、Worker、migration用のDB roleと権限を分ける。
+  - Done when: API、Worker、migration、backupのroleと権限が`DB-SEC-02`と`DB-INT-07`のとおり分かれ、API roleの書込みと、Worker roleによるDDLおよび証拠履歴の削除が拒否されることをtestで確認している。あわせて`probe_database`が、自roleが実際に使うobjectへの権限まで確かめる形になっている。現在の`SELECT 1`はobjectに触れずどんな権限のroleでも成功するため、grantの付け忘れを`/health/dependencies`が`ok`として通してしまう。
 - [ ] `CP-0023` `planned` — 欠損、不正金額、重複、再解析、rollbackのテストを作る。
 - [ ] `CP-0062` `planned` — 選定DBを使うmigrationとintegration testをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`, `CP-0023`
@@ -169,13 +173,15 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0088` `planned` — 手元のデータを失わずに別環境へ移せる最小のdump・復元手順を作る。
   - Depends on: `CP-0016`, `CP-0018`
   - Done when: 成果物は`backup-restore` Runbookで、[Runbooksの作成条件](../runbooks/README.md#作成する条件)が求める対象、整合性、backup、空環境への復元、検証を含む。稼働中のCompose環境からdumpを取って`var/db/`へ置き、空のvolumeから復元してAPIとWorkerが接続できること、artifact volumeを取り出して戻せることを実行して確認している。手順は接続先、認証、出力先を環境変数または引数で受け取り、本文へ環境固有の値を書かない。開発機と[配置先](../adr/0014-postgresql-self-hosted.md)で同じコマンド列になることを、`CP-0044`が手順を書き直さずに包めるかたちで満たす。取得原本と人が下したreviewの判断は再取得できないため、実データが生まれる`CP-0024`より前に用意する（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。暗号化、世代管理、manifest、復元訓練は`CP-0044`が扱う。
+- [ ] `CP-0093` `planned` — 取得原本を失わないためのartifact storageの保全方針を決める。
+  - Done when: `docker compose down --volumes`のような破壊操作の射程に原本を残すか、`artifacts`をexternal volume等で射程外へ出すかを判断し、採らない場合も理由をADRへ残す。原本の保持期間と削除してよい条件、volumeの容量に収まらなくなった場合の扱い（[ADR-0016](../adr/0016-local-compose-artifact-volume.md)の再評価条件）を定めている。dumpは失った後に戻す統制であり、誤って消さない統制とは別に決める。原本は再取得できず、[ADR-0002](../adr/0002-append-only-provenance.md)が保証の土台にする再解析も同時に失われるため、実データが生まれる`CP-0024`より前に決める。DBと原本を同じ時点として扱う手順は`CP-0021`と`CP-0088`が扱う。
 
 完了条件: 固定JSON/CSVサンプルを投入し、欠損した抽出結果を確定観測と分離しながら、追跡可能で重複のない観測値を再現できる。
 
 ## Phase 3 — ローカルWeb Collectorを縦に通す
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
-  - Depends on: `CP-0074`
+  - Depends on: `CP-0074`, `CP-0088`, `CP-0093`
   - Done when: URL、request、応答・構造検査、parser、source内IDの解釈が`adapters/sources/<source-slug>/`と所有関係を明示した設定・fixture・testに収まり、entrypointから共通portへ注入され、applicationにsource slugによる処理分岐がない。通常実行、dry run、再実行、結果確認、終了codeを`ingestion` Runbookに書いている（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
 - [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
@@ -224,11 +230,15 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0040` `planned` `owner` — 仕入れまたは売却判断に役立った事例を [Experiments](../experiments/README.md) に記録する。
   - Owner action: 実際の仕入れ・売却の判断で使い、役立った事例と外れた事例を提供する。
 - [ ] `CP-0041` `planned` — 古い価格が新しい価格として表示されず、sourceの停止理由と最終成功日時を確認できることを検証する。
+- [ ] `CP-0091` `planned` — healthyなまま依存が壊れている状態を、人が見に行かなくても気付けるようにする。
+  - Depends on: `CP-0015`, `CP-0027`
+  - Done when: APIの`/health/dependencies`とWorker heartbeatが報告する`degraded`、`CP-0015`のrunログ、`CP-0027`の失敗段階を、誰がどの経路でいつ知るかが決まり、degradedが一定時間続いた場合に気付ける仕組みが動いている。containerの`restart` policyと、依存が復旧しないまま放置してよい時間の上限を`compose.yaml`と`deployment` Runbookで定めている。`CP-0044`の`DB-REC-01`が求めるbackup失敗の検知を同じ経路へ載せられる形にする。health checkをlivenessだけに限る判断（[ADR-0016](../adr/0016-local-compose-artifact-volume.md)）は変えず、検知を別経路として足す。通知先の選定理由と、通知しないと決めた失敗の範囲をADRに残す。
 - [ ] `CP-0042` `planned` `owner` — API、Worker、DBを別serviceとして本人の端末またはprivate networkへ配置し、API、DB、artifact storageをInternetへ公開しない。
   - Owner action: 配置先の端末と private network を用意する。
+  - Depends on: `CP-0091`
   - Done when: 配置、private接続、role、secret、health checkの手順を`deployment` Runbookに書き（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）、その手順どおりに配置した環境でAPIとWorkerが動き、API、DB、artifact storageがInternetから到達不能であることを確認している。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序を`schema-change` Runbookにする。
-  - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。
+  - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。あわせて、コードが期待するmigration revisionとDBのrevisionの不一致を`/health/dependencies`が報告し、後方互換なmigrationの適用中に生じる一時的な不一致を失敗として扱わない境界を定めている。migrationは起動時に暗黙実行しないため（[DB要件](../architecture/database-requirements.md#開発環境とmigration)）、「コードは新しいがDBの構造は古い」状態はhealth checkを緑にしたまま成立する。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
   - Depends on: `CP-0088`
   - Done when: 日次backupと、schema migration・大量手動取込・重要なreview作業の前の臨時backupが実行され、backupの失敗と前回成功からの26時間超過を検知できる（`DB-REC-01`）。暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
