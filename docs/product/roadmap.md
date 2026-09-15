@@ -2,9 +2,9 @@
 
 > 状態: Active
 >
-> 最終更新: 2026-09-14
+> 最終更新: 2026-09-15
 >
-> Next task ID: `CP-0090`
+> Next task ID: `CP-0091`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -203,6 +203,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0029` `planned` — TCG、セット、カード番号、レアリティ、版、言語による同定規則を検証する。
 - [ ] `CP-0030` `planned` — 原文表記、正規化表記、別名、同定試行、候補と根拠を保存する。
 - [ ] `CP-0031` `planned` — 完全一致、自動候補、レビュー必須、未同定を区別する。
+- [ ] `CP-0090` `planned` — レビュー待ちの同定を人が確定・却下・保留できる操作を実装する。
+  - Depends on: `CP-0020`, `CP-0068`, `CP-0031`
+  - Done when: review queueの一覧と1件の詳細（理由、原本参照、抽出結果、同定候補と根拠）をCLIまたはJSONで確認でき、確定・却下・保留が`CP-0068`の定めた状態遷移どおりに追記されて、当初の候補と判断履歴が残る。確定した同定が`CP-0032`の集計へ反映される。人間の判断で解決できない処理失敗をqueueへ混ぜない（[データモデル](../architecture/data-model.md#取込実行とレビュー)）。操作手順は`review-queue` Runbookに書く（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。`CP-0038`の試験運用でレビュー時間を測るため、Phase 5より前に用意する。
 - [ ] `CP-0032` `planned` — 最新価格、中央値、最高値、最低値、店舗数、鮮度、スプレッドを計算する。
 - [ ] `CP-0033` `planned` — 集計値と根拠観測をCLIまたはJSONで確認できるようにする。
 - [ ] `CP-0034` `planned` — API contract、認証、versioning、pagination、エラー形式を定義する。
@@ -210,7 +213,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0036` `planned` — Card Digger等がDBへ直接接続せず、相場と根拠観測を取得できる最小APIを実装する。
 - [ ] `CP-0037` `planned` — APIとCollection Workerを別serviceとして起動できることを確認する。
 
-完了条件: 代表カードについて、根拠付きの店舗比較と履歴をAPIから再現できる。
+完了条件: 代表カードについて、根拠付きの店舗比較と履歴をAPIから再現できる。レビュー必須と判定された同定を人が確定でき、その結果が集計へ反映される。
 
 ## Phase 5 — 試験運用して価値を判定する
 
@@ -240,8 +243,9 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
 - [ ] `CP-0046` `planned` — 画像、店舗、URL、公開日時を一緒に受け取る手動取込を作る。
 - [ ] `CP-0047` `planned` — 原画像を先に保存し、OCR結果をextracted recordとして派生関係付きで残す。
   - Depends on: `CP-0066`
-- [ ] `CP-0048` `planned` — 項目単位の抽出confidenceとカード同定のmatch scoreを分け、review queueを実装する。
-  - Done when: 確認方法、確定・却下・保留、監査履歴を`review-queue` Runbookに書いている（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。
+- [ ] `CP-0048` `planned` — 項目単位の抽出confidenceとカード同定のmatch scoreを分け、OCR由来の抽出結果を`CP-0090`のreview queueへ載せる。
+  - Depends on: `CP-0090`
+  - Done when: 抽出confidenceと同定のmatch scoreが別の指標として保存され、OCR由来のreview itemが既存のqueueと同じ操作で確定・却下・保留でき、OCR固有の確認手順を`review-queue` Runbookへ追記している。
 - [ ] `CP-0049` `planned` — 誤認識率と1枚あたりのレビュー時間を測る。
 
 完了条件: 人間の修正時間を含め、手入力より有利か判断できる。
