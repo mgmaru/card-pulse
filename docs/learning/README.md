@@ -10,3 +10,4 @@
 - [外部keyの強制とDB権限](foreign-key-enforcement.md)
 - [Dockerで再現できる環境と再現できないもの](docker-environment-reproduction.md)
 - [private networkの種類と使い分け](private-network-types.md)
+- [ヘルスチェックは何を見ているのか](health-check-and-failure-isolation.md)
