@@ -66,5 +66,5 @@ After changing Markdown:
    python3 .agents/skills/check-doc-links/scripts/check_doc_links.py
    ```
 
-3. Run any document-specific validator, including the roadmap validator when the roadmap changed.
+3. Run any document-specific validator, including the roadmap validator when the roadmap changed, and `scripts/validate_adrs.py` when an ADR or the ADR index changed.
 4. Summarize what changed, why, and which validation passed.
