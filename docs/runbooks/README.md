@@ -16,14 +16,14 @@ Collectorとreview、backupの手順は対応する実装が入った時点で�
 | --- | --- | --- |
 | `ingestion.md` | `CP-0024`（最初のCollector実装） | 通常実行、dry run、再実行、結果確認、終了code |
 | `source-failure.md` | `CP-0075`（定期取得の開始前） | 実行欠落と失敗段階の判定、診断証拠の確認、再試行可否、source停止、正常原本との比較、parser修正、保存済み原本の再解析、dry run、手動再開、最終成功日時と鮮度の確認 |
-| `review-queue.md` | `CP-0048`（review queueの実装） | 確認方法、確定・却下・保留、監査履歴 |
+| `review-queue.md` | `CP-0090`（レビュー操作の実装） | 確認方法、確定・却下・保留、監査履歴 |
 | `backup-restore.md` | `CP-0088`（DBとartifact保存の後） | 対象、整合性、backup、空環境への復元、検証 |
 | `reparse.md` | `CP-0089`（計画的なparser更新の手順） | 対象選択、旧結果保持、実行、差分確認、rollback |
 | `schema-change.md` | `CP-0043`（最初のserver配置前） | 後方互換なmigration、API・Workerのdeployment順序、rollback |
 | `deployment.md` | `CP-0042`（最初のserver配置） | API・Worker・DBの配置、private接続、role、secret、health check |
 | `twscrape.md` | twscrapeの採用を決めるADR | 認証情報、version固定、監視、障害、撤退手順 |
 
-`review-queue.md`の担当はPhase 6の`CP-0048`にある。Phase 4までにreviewの操作手段が必要になった場合は、その実装を持つタスクへ担当を移す。
+`review-queue.md`はPhase 4の`CP-0090`が作り、Phase 6の`CP-0048`がOCR固有の手順を追記する。
 
 ## 記載ルール
 
