@@ -30,6 +30,9 @@ jobs:
       - name: Validate roadmap
         run: python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py
 
+      - name: Validate ADR structure
+        run: python3 .agents/skills/write-project-docs/scripts/validate_adrs.py
+
   quality-checks:
     name: Quality checks
     runs-on: ubuntu-24.04
