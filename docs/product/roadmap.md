@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-15
 >
-> Next task ID: `CP-0097`
+> Next task ID: `CP-0098`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -120,6 +120,8 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Evidence: `AGENTS.md`の`Documentation`へ2点を追加した。既存の「判断をADRへ記録する」だけでは、既存ADRのDecisionを守る検査を作った場合にどこへ書くかが決まらないため、そのADRの`Validation`へ記録することと、それが`Decision`の書き換えに当たらないことを明記した。あわせて、`Superseded`なADRを現行の根拠として引用する前に状態を確認し、生きている範囲と置換したADRを示すことを規則にした。どちらも`CP-0092`と`CP-0094`で実際に抜けた箇所で、前者はADR-0016の`Validation`が自身の回帰検査を知らない状態、後者は学習資料が`Superseded`なADR-0005を注記なしで引用していた状態として現れた。既存の規則と重複する内容は足していない。`AGENTS.md`は両ツール共通の正であり（[CLAUDE.md](../../CLAUDE.md)）、CodexとClaude Codeの双方へ同時に効く。
 - [x] `CP-0096` `done` — ADRの節とヘッダ項目を規則にし、既存ADRの体裁を揃える。
   - Evidence: 23件を機械的に点検し、節は全件がテンプレートの5節ちょうどで一致していた一方、ヘッダ項目は6件が逸脱していた（ADR-0001・0002・0006が3項目欠落、ADR-0003が3項目欠落と独自ラベル`後継ADR`、ADR-0004・0005が1項目欠落）。いずれもテンプレートが固まる前のADR-0001〜0006に集中していた。[ADR README](../adr/README.md#文書の構成)へ`文書の構成`節を追加し、5節の必須と順序、該当が無い節も削除しないこと、ヘッダ5項目の必須と「なし」の記入、`置換するADR`と`置換されたADR`の向きの違い、`###`小見出しを`Decision`だけに使うことを定めた。`###`が31個すべて`Decision`内にあることを確認して規則にした。`読みやすさ`節では、`Decision`の平均が72字/文、最長文の平均が113字であり、ADR-0014以降で文数が増えた（24・29・22文）のに表が23件中4件しか使われていない実測をもとに、一文一論点と60字の目安、`Decision`の`###`分割、3軸以上の比較を表にすることを定めた。`Consequences`と`Alternatives considered`は全23件で既に散文0文の箇条書きだったため、現状の追認として記載した。文書全体の書き分けは[`write-project-docs`](../../.agents/skills/write-project-docs/SKILL.md)へ委ね、重複を書いていない。既存6件はヘッダ項目だけを補い、本文は変更していない（差分がヘッダ行のみであることを確認済み）。23件すべてがテンプレート順の5項目ちょうどになった。
+- [x] `CP-0097` `done` — ADRの状態から、それが現行の根拠かどうかを読み取れるようにする。
+  - Evidence: 5つの状態と意味は[ADR README](../adr/README.md#状態)に既に箇条書きであったが、どの状態のADRを現行の根拠として引用してよいかが書かれていなかった。表へ「現行の根拠か」の列を足し、`Accepted`だけが「はい」であることを示した。あわせて、古いADRを消さない理由（当時その選択を採った理由まで残すため）と、`Superseded`でも判断の一部だけが置き換わり残りが生きている場合があることを追記した。実例として[ADR-0005](../adr/0005-separate-runtime-services.md)を挙げた。同ADRは`Superseded`だが[ADR-0012](../adr/0012-private-personal-operation.md)がruntime分離の維持を明記しており、置き換わったのはAPIの外部公開の部分だけである。この区別が書かれていなかったため、`CP-0094`の学習資料がADR-0005を注記なしで現行文書として引用する誤りが起きた。`CP-0095`が`AGENTS.md`へ入れた引用時の規則と同じ内容を、人が読むADR側にも置いた形になる。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
