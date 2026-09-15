@@ -75,6 +75,7 @@ hostへ公開するのは、loopbackへbindしたDB portとAPI portだけとす�
 ## Validation
 
 - `CP-0061`で、空のGitHub-hosted runnerからimage build、起動、各serviceのhealth checkが成功することを検査する。
+- `CP-0092`で、`db`を止めた状態で`api`と`worker`がhealthyのままであること、`/health/dependencies`がHTTP 200で`degraded`を返すこと、Worker heartbeatが`degraded`で書かれ続けること、DBの復帰後に両方が`ok`へ戻ることを検査する。health checkを依存の状態まで見る形へ変えると、この検査が失敗する。上のDecisionが選んだ「livenessだけを表す」構成は、正常系の起動検査だけでは壊れても気付けないため、依存を落とした状態の検査を分けて置く。
 - 構成の不変条件（pullするimageのdigest固定、公開portのloopback bind、`.env.example`の網羅、artifact volumeのmount先）は`tests/unit/test_local_environment.py`が検査する。
 - 次のいずれかが起きた場合にartifact storageの判断を再評価する。
   - 原本の容量が開発機のdiskまたはDocker volumeに収まらなくなる。
