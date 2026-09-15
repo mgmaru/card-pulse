@@ -4,7 +4,7 @@
 >
 > 最終更新: 2026-09-15
 >
-> Next task ID: `CP-0095`
+> Next task ID: `CP-0096`
 
 この文書は検証と開発の順序を示す。MVPの範囲と完了条件は [MVP定義](mvp.md) を正とする。日々の細かな作業管理を始めた後は、実行タスクをIssue等へ移し、この文書にはフェーズと判断条件を残す。
 
@@ -116,6 +116,8 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Evidence: `.github/workflows/ci.yml`の`Compose environment` jobへ、正常系の検査の後ろに6 stepを足した。`docker compose stop db`の後35秒待ち、`api`と`worker`のhealth status、`FailingStreak`、`RestartCount`を`docker inspect`で読む。35秒はhealth checkのinterval 15秒の2周分で、`retries: 3`に達してunhealthyになるのを待たずに、連続失敗回数が先に現れる`FailingStreak`で検出する。続けてAPIが200と`degraded`と`database`の失敗理由を返すこと、Worker heartbeatが`degraded`で`database`だけが`healthy: false`であること、`docker compose start db`の後に両方が`ok`へ戻ることをpollingで確認する。heartbeatが`degraded`であること自体が、DBが落ちた後に書かれた証拠になる。Colima 29.5.2（macOS、arm64）で同じ判定を実行し、12件すべてが通ることを確認した。APIは`OperationalError: failed to resolve host 'db'`をdetailに載せて200を返し続け、`api`と`worker`はhealth=healthy・FailingStreak=0・RestartCount=0のままだった。復帰はAPIが即時、Workerは巡回間隔30秒ぶん遅れて`ok`に戻った。検査が効くことは、`api`のhealth checkを`/health/dependencies`の`status`を見る形へ一時的に差し替えて確認した。DBを止めて35秒後に`FailingStreak`が2となり、`test "$streak" -eq 0`が失敗する。この時点でhealth statusはまだ`healthy`であり、unhealthy化を待つ検査では捕まらないことも同時に確認した。`CP-0012`と`CP-0061`が手元で一度確認しただけだったADR-0005の障害分離が、pull requestごとに検査されるようになった。[ADR-0016](../adr/0016-local-compose-artifact-volume.md)の`Validation`へこの検査を追記し、判断そのものと、それが守られていることを確かめる手段が同じ文書から辿れるようにした。`Decision`は書き換えていない（[ADR README](../adr/README.md#状態)）。
 - [x] `CP-0094` `done` — health checkが何を表し何を表さないかを学習資料にする。
   - Evidence: [ヘルスチェックは何を見ているのか](../learning/health-check-and-failure-isolation.md)に、health checkの仕組み、livenessと依存の状態の区別、[ADR-0016](../adr/0016-local-compose-artifact-volume.md)がlivenessだけを表すと決めた理由、DBを止めたときの実測、`Status`より先に動く`FailingStreak`を`CP-0092`が見る理由をまとめた。「containerがhealthyならserviceは仕事ができる」「`FailingStreak`はDBの状態」という誤解を8節に表として置いた。検査は守りたい性質を意図的に壊して落ちることを確認してはじめて検査になる、という点を7.4節で一般化した。[Learning README](../learning/README.md)の索引へ追加した。
+- [x] `CP-0095` `done` — 判断を守る仕組みと、置換されたADRの引用について、リポジトリ規則を補う。
+  - Evidence: `AGENTS.md`の`Documentation`へ2点を追加した。既存の「判断をADRへ記録する」だけでは、既存ADRのDecisionを守る検査を作った場合にどこへ書くかが決まらないため、そのADRの`Validation`へ記録することと、それが`Decision`の書き換えに当たらないことを明記した。あわせて、`Superseded`なADRを現行の根拠として引用する前に状態を確認し、生きている範囲と置換したADRを示すことを規則にした。どちらも`CP-0092`と`CP-0094`で実際に抜けた箇所で、前者はADR-0016の`Validation`が自身の回帰検査を知らない状態、後者は学習資料が`Superseded`なADR-0005を注記なしで引用していた状態として現れた。既存の規則と重複する内容は足していない。`AGENTS.md`は両ツール共通の正であり（[CLAUDE.md](../../CLAUDE.md)）、CodexとClaude Codeの双方へ同時に効く。
 - [x] `CP-0069` `done` — CodexとClaude Codeの両方で同じエージェント設定が有効になるようにし、乖離をCIで検査する。
   - Depends on: `CP-0059`
   - Evidence: エージェント定義を`.agents/agents/`の中立形式に一本化し、[`maintain-tool-parity`](../../.agents/skills/maintain-tool-parity/SKILL.md)が`.codex/agents/`と`.claude/agents/`を生成する。同Skillの検査スクリプトが生成物の一致、共有Skillのsymlink、`CLAUDE.md`の`@AGENTS.md`取り込みを検証し、CIの`Agent configuration` jobで実行する。
