@@ -79,7 +79,8 @@ jobs:
         run: python3 .agents/skills/maintain-tool-parity/scripts/check_tool_parity.py
 
   # 空のrunner上でCompose環境をbuildして起動し、各serviceのhealth checkとその依存の
-  # 報告が通ることを確認する（ADR-0016）。開発機がmacOS、runnerがLinux amd64のため、
+  # 報告が通ることを確認する（ADR-0016）。続けてDBを止め、ADR-0005が求める障害分離が
+  # 保たれることを検査する（`CP-0092`）。開発機がmacOS、runnerがLinux amd64のため、
   # この検査はWSL2構成の継続的な確認も兼ねる（ADR-0018）。DBを使うmigrationと
   # integration testの追加は`CP-0062`で行う。
   compose-environment:
@@ -141,6 +142,89 @@ jobs:
           docker compose exec -T worker sh -c 'cat "$CARD_PULSE_WORKER_HEARTBEAT_PATH"' > "$heartbeat"
           cat "$heartbeat"
           jq --exit-status '.status == "ok"' "$heartbeat" > /dev/null
+
+      # ここから障害分離の検査（`CP-0092`）。ADR-0005とADR-0016が求めるのは、DBが落ちても
+      # APIとWorkerが動き続け、状態を報告することである。この性質は`CP-0012`と`CP-0061`で
+      # 手元で一度確認しただけで、CIは正常系しか通していなかった。health checkを依存の状態
+      # まで見る形へ変えると、DBを止めた時点でcontainerが失敗を数え始め、下のstepが落ちる。
+      - name: Stop the database
+        run: docker compose stop db
+
+      # health checkのintervalは15秒。2周分待ってから見る。依存を見るhealth checkであれば
+      # この時点で失敗が記録されている。retriesに達してunhealthyになるのを待たなくても、
+      # 連続失敗回数がFailingStreakへ先に現れるため、そちらを見る。
+      - name: Check the API and Worker stay healthy without the database
+        run: |
+          sleep 35
+          docker compose ps
+          for service in api worker; do
+            container="$(docker compose ps --quiet "$service")"
+            status="$(docker inspect --format '{{.State.Health.Status}}' "$container")"
+            streak="$(docker inspect --format '{{.State.Health.FailingStreak}}' "$container")"
+            restarts="$(docker inspect --format '{{.RestartCount}}' "$container")"
+            echo "$service: health=$status failing_streak=$streak restarts=$restarts"
+            test "$status" = healthy
+            test "$streak" -eq 0
+            test "$restarts" -eq 0
+          done
+
+      # 依存の失敗をHTTP 500やconnection refusedにせず、200のbodyとして返すことが要点。
+      # 落ちたAPIと、生きていて異常を報告しているAPIを、呼ぶ側が区別できなくなるため。
+      - name: Check the API reports the outage and keeps answering
+        run: |
+          response="${RUNNER_TEMP}/api-degraded.json"
+          code="$(curl --silent --show-error --max-time 30 --output "$response" \
+              --write-out '%{http_code}' \
+              "http://$(docker compose port api 8000)/health/dependencies")"
+          cat "$response"
+          test "$code" = 200
+          jq --exit-status '.status == "degraded"' "$response" > /dev/null
+          jq --exit-status '
+            .dependencies[] | select(.name == "database")
+            | .healthy == false and (.detail | length > 0)
+          ' "$response" > /dev/null
+
+      # heartbeatが`degraded`であることが、DBが落ちた後に書かれた証拠になる。probeが
+      # 失敗しなければこの値にならない。前のstepでworker containerがhealthyであることを
+      # 確かめており、worker側のhealth checkはheartbeatの新しさそのものなので、
+      # 「止まった後も書き続けている」がこの2つで成立する。
+      - name: Check the Worker keeps writing a degraded heartbeat
+        run: |
+          heartbeat="${RUNNER_TEMP}/worker-degraded.json"
+          docker compose exec -T worker sh -c 'cat "$CARD_PULSE_WORKER_HEARTBEAT_PATH"' > "$heartbeat"
+          cat "$heartbeat"
+          jq --exit-status '.status == "degraded"' "$heartbeat" > /dev/null
+          jq --exit-status '
+            .dependencies[] | select(.name == "database") | .healthy == false
+          ' "$heartbeat" > /dev/null
+          jq --exit-status '
+            .dependencies[] | select(.name == "artifact-storage") | .healthy == true
+          ' "$heartbeat" > /dev/null
+
+      - name: Restart the database
+        run: docker compose start db
+
+      # 復帰までの時間はrunnerの負荷で変わるため、固定の待ち時間ではなくpollingで待つ。
+      # workerの巡回間隔は30秒なので、heartbeatが戻るまでAPIより遅れる。
+      - name: Check both services recover once the database returns
+        run: |
+          deadline=$(( SECONDS + 120 ))
+          while true; do
+            api_status="$(curl --silent --max-time 30 \
+                "http://$(docker compose port api 8000)/health/dependencies" \
+                | jq -r '.status // "unreachable"')"
+            worker_status="$(docker compose exec -T worker sh -c 'cat "$CARD_PULSE_WORKER_HEARTBEAT_PATH"' \
+                | jq -r '.status // "unreadable"')"
+            echo "api=$api_status worker=$worker_status"
+            if [ "$api_status" = ok ] && [ "$worker_status" = ok ]; then
+              break
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "the services did not recover within 120s" >&2
+              exit 1
+            fi
+            sleep 5
+          done
 
       - name: Report the environment after a failure
         if: failure()
