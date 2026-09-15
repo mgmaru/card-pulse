@@ -172,14 +172,14 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Done when: 空DBへのmigrationと保存・冪等性・rollbackの検査が本番候補と同じDB engineで成功する。
 - [ ] `CP-0088` `planned` — 手元のデータを失わずに別環境へ移せる最小のdump・復元手順を作る。
   - Depends on: `CP-0016`, `CP-0018`
-  - Done when: 成果物は`backup-restore` Runbookで、[Runbooksの作成条件](../runbooks/README.md#作成する条件)が求める対象、整合性、backup、空環境への復元、検証を含む。稼働中のCompose環境からdumpを取って`var/db/`へ置き、空のvolumeから復元してAPIとWorkerが接続できること、artifact volumeを取り出して戻せることを実行して確認している。手順は接続先、認証、出力先を環境変数または引数で受け取り、本文へ環境固有の値を書かない。開発機と[配置先](../adr/0014-postgresql-self-hosted.md)で同じコマンド列になることを、`CP-0044`が手順を書き直さずに包めるかたちで満たす。取得原本と人が下したreviewの判断は再取得できないため、実データが生まれる`CP-0024`より前に用意する（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。暗号化、世代管理、manifest、復元訓練は`CP-0044`が扱う。
+  - Done when: 成果物は`backup-restore` Runbookで、[Runbooksの作成条件](../runbooks/README.md#作成する条件)が求める対象、整合性、backup、空環境への復元、検証を含む。稼働中のCompose環境からdumpを取って`var/db/`へ置き、空のvolumeから復元してAPIとWorkerが接続できること、artifact volumeを取り出して戻せることを実行して確認している。手順は接続先、認証、出力先を環境変数または引数で受け取り、本文へ環境固有の値を書かない。開発機と[配置先](../adr/0014-postgresql-self-hosted.md)で同じコマンド列になることを、`CP-0044`が手順を書き直さずに包めるかたちで満たす。取得原本と人が下したreviewの判断は再取得できないため、実データが生まれる`CP-0024`より前に用意する（[ADR-0023](../adr/0023-named-volume-for-database-data.md)）。あわせて、`docker compose down --volumes`が原本ごと消せる状態を残すか、`artifacts`をexternal volume等で破壊コマンドの射程外へ出すかを判断し、採らない場合も理由をADRへ残す。dumpは失った後に戻す統制であり、誤って消さない統制とは別に決める必要がある。暗号化、世代管理、manifest、復元訓練は`CP-0044`が扱う。
 
 完了条件: 固定JSON/CSVサンプルを投入し、欠損した抽出結果を確定観測と分離しながら、追跡可能で重複のない観測値を再現できる。
 
 ## Phase 3 — ローカルWeb Collectorを縦に通す
 
 - [ ] `CP-0024` `planned` — 最も構造化された情報源で、取得、原本保存、解析、同定、DB保存まで実装する。
-  - Depends on: `CP-0074`
+  - Depends on: `CP-0074`, `CP-0088`
   - Done when: URL、request、応答・構造検査、parser、source内IDの解釈が`adapters/sources/<source-slug>/`と所有関係を明示した設定・fixture・testに収まり、entrypointから共通portへ注入され、applicationにsource slugによる処理分岐がない。通常実行、dry run、再実行、結果確認、終了codeを`ingestion` Runbookに書いている（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）。
 - [ ] `CP-0025` `planned` — User-Agent、timeout、低頻度アクセス、backoff、最大再試行、403・429・challenge時の停止をsource設定として定義する。
 - [ ] `CP-0026` `planned` — Git管理外のsource由来fixtureとrepository内の合成fixtureを用意し、ネットワークなしでparserをテストする。
