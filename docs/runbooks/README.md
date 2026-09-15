@@ -10,18 +10,20 @@ Runbookは、開発者または運用者が同じ手順を再現する必要が�
 
 ## 作成する条件
 
-Collectorとreview、backupの手順は対応する実装が入った時点で作る。
+Collectorとreview、backupの手順は対応する実装が入った時点で作る。作成は[ロードマップ](../product/roadmap.md)のタスクが持ち、担当の無いRunbookを増やさない。担当を書かずに条件だけを置くと、実装が終わった時点で誰も手順を書かないまま次へ進む。
 
-| Runbook | 作成する時点 | 最低限含める内容 |
+| Runbook | 作成するタスク | 最低限含める内容 |
 | --- | --- | --- |
-| `ingestion.md` | 最初のCollector実装時 | 通常実行、dry run、再実行、結果確認、終了code |
-| `source-failure.md` | Phase 3の`CP-0075`。定期取得開始前 | 実行欠落と失敗段階の判定、診断証拠の確認、再試行可否、source停止、正常原本との比較、parser修正、保存済み原本の再解析、dry run、手動再開、最終成功日時と鮮度の確認 |
-| `review-queue.md` | review機能実装時 | 確認方法、確定・却下・保留、監査履歴 |
-| `backup-restore.md` | DBとartifact保存実装時 | 対象、整合性、backup、空環境への復元、検証 |
-| `reparse.md` | parser version管理実装時 | 対象選択、旧結果保持、実行、差分確認、rollback |
-| `schema-change.md` | 最初のserver配置前 | 後方互換なmigration、API・Workerのdeployment順序、rollback |
-| `deployment.md` | 最初のserver配置前 | API・Worker・DBの配置、private接続、role、secret、health check |
-| `twscrape.md` | twscrape採用時のみ | 認証情報、version固定、監視、障害、撤退手順 |
+| `ingestion.md` | `CP-0024`（最初のCollector実装） | 通常実行、dry run、再実行、結果確認、終了code |
+| `source-failure.md` | `CP-0075`（定期取得の開始前） | 実行欠落と失敗段階の判定、診断証拠の確認、再試行可否、source停止、正常原本との比較、parser修正、保存済み原本の再解析、dry run、手動再開、最終成功日時と鮮度の確認 |
+| `review-queue.md` | `CP-0048`（review queueの実装） | 確認方法、確定・却下・保留、監査履歴 |
+| `backup-restore.md` | `CP-0088`（DBとartifact保存の後） | 対象、整合性、backup、空環境への復元、検証 |
+| `reparse.md` | `CP-0089`（計画的なparser更新の手順） | 対象選択、旧結果保持、実行、差分確認、rollback |
+| `schema-change.md` | `CP-0043`（最初のserver配置前） | 後方互換なmigration、API・Workerのdeployment順序、rollback |
+| `deployment.md` | `CP-0042`（最初のserver配置） | API・Worker・DBの配置、private接続、role、secret、health check |
+| `twscrape.md` | twscrapeの採用を決めるADR | 認証情報、version固定、監視、障害、撤退手順 |
+
+`review-queue.md`の担当はPhase 6の`CP-0048`にある。Phase 4までにreviewの操作手段が必要になった場合は、その実装を持つタスクへ担当を移す。
 
 ## 記載ルール
 
