@@ -165,6 +165,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0018`, `CP-0066`
 - [ ] `CP-0021` `planned` — DBとartifact storageの片方だけが成功した場合の状態、再実行、孤立データ処理を決める。
 - [ ] `CP-0022` `planned` — API、Worker、migration用のDB roleと権限を分ける。
+  - Done when: API、Worker、migration、backupのroleと権限が`DB-SEC-02`と`DB-INT-07`のとおり分かれ、API roleの書込みと、Worker roleによるDDLおよび証拠履歴の削除が拒否されることをtestで確認している。あわせて`probe_database`が、自roleが実際に使うobjectへの権限まで確かめる形になっている。現在の`SELECT 1`はobjectに触れずどんな権限のroleでも成功するため、grantの付け忘れを`/health/dependencies`が`ok`として通してしまう。
 - [ ] `CP-0023` `planned` — 欠損、不正金額、重複、再解析、rollbackのテストを作る。
 - [ ] `CP-0062` `planned` — 選定DBを使うmigrationとintegration testをGitHub Actionsへ追加する。
   - Depends on: `CP-0012`, `CP-0023`
@@ -235,7 +236,7 @@ python3 .agents/skills/maintain-roadmap/scripts/validate_roadmap.py --owner
   - Depends on: `CP-0091`
   - Done when: 配置、private接続、role、secret、health checkの手順を`deployment` Runbookに書き（[Runbooksの作成条件](../runbooks/README.md#作成する条件)）、その手順どおりに配置した環境でAPIとWorkerが動き、API、DB、artifact storageがInternetから到達不能であることを確認している。
 - [ ] `CP-0043` `planned` — 後方互換なschema変更とserviceのdeployment順序を`schema-change` Runbookにする。
-  - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。
+  - Done when: 後方互換なmigration、API・Workerのdeployment順序、rollbackを[Runbooksの作成条件](../runbooks/README.md#作成する条件)のとおり書いている。配置そのものの手順は`CP-0042`の`deployment` Runbookが扱う。あわせて、コードが期待するmigration revisionとDBのrevisionの不一致を`/health/dependencies`が報告し、後方互換なmigrationの適用中に生じる一時的な不一致を失敗として扱わない境界を定めている。migrationは起動時に暗黙実行しないため（[DB要件](../architecture/database-requirements.md#開発環境とmigration)）、「コードは新しいがDBの構造は古い」状態はhealth checkを緑にしたまま成立する。
 - [ ] `CP-0044` `planned` — バックアップと空環境への復元を実施する。
   - Depends on: `CP-0088`
   - Done when: 日次backupと、schema migration・大量手動取込・重要なreview作業の前の臨時backupが実行され、backupの失敗と前回成功からの26時間超過を検知できる（`DB-REC-01`）。暗号化した日次7世代・週次4世代の保持、基準時刻・migration revision・artifact manifest・checksumを含むbackup set、空環境への復元訓練を実施し、[DB要件](../architecture/database-requirements.md#backup復旧可用性)の`DB-REC-*`を実測で満たしている。手順そのものは`CP-0088`が作り、ここではそれを運用として満たす。
